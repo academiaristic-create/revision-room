@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F1F5F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1920" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Revision Room">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Revision Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: one calm column. Library of lessons -> a lesson's four exercise tiles -> one exercise at a time. */
+:root{
+  --bg:#F1F5F8; --surface:#FFFFFF; --ink:#13212B; --muted:#586873; --line:#D6DFE6;
+  --accent:#0E6B66; --accent-ink:#FFFFFF; --tint:#E2F0EE;
+  --mark:#FFD84D; --mark-ink:#13212B;
+  --good:#17703D; --good-bg:#E1F3E8; --bad:#B3261E; --bad-bg:#FBE6E3;
+  --display:'Bricolage Grotesque',system-ui,sans-serif;
+  --body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1920; --surface:#16252E; --ink:#E7EDF1; --muted:#9AADB9; --line:#2A3D49;
+    --accent:#52C4BA; --accent-ink:#052321; --tint:#17353A;
+    --mark:#E9C444; --mark-ink:#13212B;
+    --good:#6FD596; --good-bg:#173628; --bad:#FF9188; --bad-bg:#3C1F1D;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1920; --surface:#16252E; --ink:#E7EDF1; --muted:#9AADB9; --line:#2A3D49;
+  --accent:#52C4BA; --accent-ink:#052321; --tint:#17353A;
+  --mark:#E9C444; --mark-ink:#13212B;
+  --good:#6FD596; --good-bg:#173628; --bad:#FF9188; --bad-bg:#3C1F1D;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding-inline:16px}
+.wrap{max-width:640px;margin:0 auto;padding-block:28px 64px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,.display{font-family:var(--display);letter-spacing:-.02em}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* header */
+.eyebrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:700;text-wrap:balance;overflow-wrap:anywhere}
+.hl{background:linear-gradient(transparent 60%,var(--mark) 60% 92%,transparent 92%);padding:0 .12em;margin-left:-.12em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+:root[data-theme="dark"] .hl{background:linear-gradient(transparent 60%,color-mix(in srgb,var(--mark) 55%,transparent) 60% 92%,transparent 92%)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hl{background:linear-gradient(transparent 60%,color-mix(in srgb,var(--mark) 55%,transparent) 60% 92%,transparent 92%)}}
+.sub{margin:0;color:var(--muted);max-width:52ch}
+
+/* library */
+.drop{display:grid;gap:4px;margin-top:26px;padding:26px 20px;background:var(--surface);border:2px dashed var(--line);border-radius:16px;cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over,.drop:focus-within{border-color:var(--accent)}
+.drop.over{background:var(--tint)}
+.dt{font:700 22px/1.2 var(--display);letter-spacing:-.01em}
+.dd{color:var(--muted);font-size:15px}
+.msg:not(:empty){margin:14px 0 0;padding:11px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:15px;white-space:pre-line}
+.msg.good{background:var(--good-bg);border-color:transparent}
+.msg.bad{background:var(--bad-bg);border-color:transparent}
+.warn{margin:14px 0 0;padding:11px 14px;border-radius:12px;background:var(--bad-bg);font-size:14px}
+.label{margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.lessons{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.lesson{display:flex;gap:12px 16px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.lm{flex:1 1 200px;min-width:0;display:grid;gap:2px}
+.lt{font:700 19px/1.25 var(--display);letter-spacing:-.01em;overflow-wrap:anywhere}
+.lc{color:var(--muted);font-size:14px}
+.la{display:flex;gap:8px;flex:none}
+.sec{margin-top:30px}
+.how{margin-top:30px}
+.how h2{font-size:21px;margin:0 0 6px}
+.how p{margin:0 0 14px;color:var(--muted);max-width:56ch}
+.mini{overflow-x:auto;margin-bottom:16px}
+.mini table{border-collapse:collapse;width:100%;font-size:15px;background:var(--surface)}
+.mini th,.mini td{border:1px solid var(--line);padding:7px 12px;text-align:left}
+.mini th{color:var(--muted);font-weight:600;font-size:13px}
+.foot{margin:28px 0 0;font-size:13px;color:var(--muted)}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:28px}
+.tile{display:flex;flex-direction:column;gap:2px;text-align:left;padding:16px;min-height:132px;background:var(--surface);border:1px solid var(--line);border-radius:14px;cursor:pointer;transition:border-color .15s,transform .15s}
+.tile:hover:not(:disabled){border-color:var(--accent)}
+.tile:active:not(:disabled){transform:scale(.985)}
+.tile:disabled{opacity:.5;cursor:default}
+.tn{font:700 21px/1.15 var(--display);letter-spacing:-.01em}
+.tc{color:var(--muted);font-size:14px}
+.tl{margin-top:auto;padding-top:14px;font-size:13px;font-weight:600;color:var(--accent)}
+
+/* session chrome */
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:12px}
+.link{background:none;border:0;padding:8px 0;color:var(--accent);font-weight:600;cursor:pointer;text-align:left}
+.link.small{font-size:14px;font-weight:500;color:var(--muted);margin-top:14px;display:block}
+.count{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.prog{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:26px}
+.prog i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .25s}
+.hint{margin:12px 0 0;color:var(--muted);font-size:14px}
+
+/* buttons */
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.btn{flex:1 1 150px;min-height:50px;padding:0 20px;border-radius:12px;border:1px solid transparent;font-weight:600;cursor:pointer}
+.btn.sm{flex:none;min-height:42px;padding:0 16px;font-size:15px}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:var(--surface);border-color:var(--line)}
+.btn.armed{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+
+/* flashcard */
+.flash{display:flex;flex-direction:column;justify-content:center;gap:14px;width:100%;min-height:290px;padding:44px 24px 28px;position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;cursor:pointer}
+.flash .side{position:absolute;top:16px;left:20px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.flash .face{font:700 clamp(24px,6vw,30px)/1.25 var(--display);letter-spacing:-.01em;animation:pop .18s ease;overflow-wrap:anywhere}
+.flash .face.back{color:var(--accent)}
+.flash .face.rule{font:500 clamp(16px,4.2vw,18px)/1.55 var(--body);letter-spacing:0;color:var(--ink);white-space:pre-line}
+@keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* gap fill */
+.sentence{font-size:clamp(19px,4.8vw,23px);line-height:2.3;margin:0}
+input.gap{font:inherit;color:var(--ink);text-align:center;background:var(--tint);border:0;border-bottom:2px solid var(--muted);border-radius:6px 6px 0 0;padding:0 6px;margin:0 3px;max-width:100%;min-width:3.4em}
+input.gap:focus{outline:none;border-bottom-color:var(--accent);background:var(--surface);box-shadow:0 0 0 2px var(--accent)}
+input.gap.ok{background:var(--good-bg);border-bottom-color:var(--good);color:var(--good)}
+input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.fix{font-weight:600;color:var(--good);margin-right:4px}
+.fb{margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);overflow-wrap:anywhere}
+.fb.ok{background:var(--good-bg);border-color:transparent}
+.fb.no{background:var(--bad-bg);border-color:transparent}
+.fb b{color:var(--good)} .fb.no b{color:var(--bad)}
+
+/* quiz */
+.q{font:700 clamp(21px,5.4vw,26px)/1.3 var(--display);letter-spacing:-.01em;margin:0 0 20px;text-wrap:balance;overflow-wrap:anywhere}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:13px 14px;min-height:54px;background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:pointer;overflow-wrap:anywhere}
+.opt span:last-child{min-width:0}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt .k{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--tint);font-size:13px;font-weight:600;color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-bg);border-color:var(--good)}
+.opt.right .k{background:var(--good);color:var(--surface)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt.wrong .k{background:var(--bad);color:var(--surface)}
+.opt.dim{opacity:.55}
+
+/* matching */
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col{display:grid;gap:10px;align-content:start}
+.chip{min-height:56px;padding:10px 12px;text-align:left;font-size:15px;line-height:1.3;background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:pointer;overflow-wrap:anywhere}
+.chip.sel{border-color:var(--accent);background:var(--tint);box-shadow:0 0 0 1px var(--accent)}
+.chip.done{background:var(--good-bg);border-color:transparent;color:var(--good);cursor:default}
+.chip.slip{background:var(--bad-bg);border-color:var(--bad);animation:nudge .3s}
+@keyframes nudge{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* results */
+.res .big{font:700 clamp(56px,16vw,84px)/1 var(--display);letter-spacing:-.03em;margin:4px 0 6px;font-variant-numeric:tabular-nums}
+.res .msg2{font:700 22px/1.2 var(--display);margin:18px 0 0}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script src="pdf.min.js"></script>
+<script>
+/* Lesson-notes parser and exercise builders. Pure functions, no DOM. */
+var Parser = (function () {
+  var HEADER = /^(english|spanish|serbian|russian|german|french|italian|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
+  var SKIP_RULE = /vocab|chunk|слов|лексик|phrase|expression/i;
+  var STOP = new Set('a an the to of in on at for with and or but is are was were be been being am do does did have has had will would can could should may might must shall not no it its this that these those you your he she we they them his her our their my me one ones some any about up out off over into from by as if than then so too very just also more most much many get got go goes going made make sth smth smb sb someone something somebody'.split(' '));
+
+  function clean(s) {
+    return String(s).replace(/<br\s*\/?>/gi, ' ').replace(/\\\|/g, '|').replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/[*`]/g, '').replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').replace(/^_+|_+$/g, '').trim();
+  }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function sample(a, n) { return shuffle(a).slice(0, n); }
+  function dedupe(items) {
+    var seen = {}, out = [];
+    items.forEach(function (it) { var k = it.a.toLowerCase(); if (!seen[k]) { seen[k] = 1; out.push(it); } });
+    return out;
+  }
+  function isHeaderRow(row) { return row.length >= 2 && HEADER.test(row[0]) && HEADER.test(row[1]); }
+
+  /* ---------- Markdown ---------- */
+  function splitRow(line) {
+    var t = line.trim();
+    if (t[0] === '|') t = t.slice(1);
+    if (t[t.length - 1] === '|' && t[t.length - 2] !== '\\') t = t.slice(0, -1);
+    var cells = [], cur = '';
+    for (var i = 0; i < t.length; i++) {
+      if (t[i] === '\\' && t[i + 1] === '|') { cur += '|'; i++; }
+      else if (t[i] === '|') { cells.push(cur); cur = ''; }
+      else cur += t[i];
+    }
+    cells.push(cur);
+    return cells.map(clean);
+  }
+  function isSep(cells) { return cells.length > 0 && cells.every(function (c) { return /^:?-+:?$/.test(c.replace(/\s/g, '')); }); }
+
+  function parseMarkdown(text) {
+    var lines = String(text).replace(/\r/g, '').split('\n'), items = [], rules = [], cur = null, i = 0;
+    function flush() { if (cur && cur.t.length && !SKIP_RULE.test(cur.h)) rules.push({ h: cur.h, t: cur.t.join('\n') }); cur = null; }
+    function addTable(rows) {
+      var start = 0;
+      if (rows.length > 1 && isSep(rows[1])) start = 2; else if (rows.length && isHeaderRow(rows[0])) start = 1;
+      for (var r = start; r < rows.length; r++) {
+        if (isSep(rows[r])) continue;
+        var a = rows[r][0], b = rows[r][1];
+        if (a && b) items.push({ a: a, b: b });
+      }
+    }
+    while (i < lines.length) {
+      var tr = lines[i].trim();
+      var hm = /^(#{1,6})\s+(.*?)\s*#*$/.exec(tr);
+      if (hm) { flush(); if (hm[1].length >= 2) cur = { h: clean(hm[2]), t: [] }; i++; continue; }
+      if (tr[0] === '|') {
+        var rows = [];
+        while (i < lines.length && lines[i].trim()[0] === '|') { rows.push(splitRow(lines[i])); i++; }
+        addTable(rows); continue;
+      }
+      if (tr && cur) cur.t.push(clean(tr.replace(/^[-*+]\s+/, '• ')));
+      i++;
+    }
+    flush();
+    if (!items.length) {
+      lines.forEach(function (ln) {
+        var m = /^\s*(?:[-*+]|\d+[.)])\s+(.+?)\s+(?:—|–|=|→)\s+(.+)$/.exec(ln);
+        if (m) { var a = clean(m[1]), b = clean(m[2]); if (a && b) items.push({ a: a, b: b }); }
+      });
+    }
+    return { items: dedupe(items), rules: rules };
+  }
+
+  /* ---------- PDF (items come from pdf.js: {str, x, y, w, h}) ---------- */
+  function toLines(items, colXs) {
+    var its = items.filter(function (i) { return i.str.trim(); }).sort(function (p, q) { return q.y - p.y || p.x - q.x; });
+    var rows = [];
+    its.forEach(function (it) {
+      var L = rows[rows.length - 1];
+      if (L && Math.abs(L.y - it.y) < Math.max(2, it.h * 0.4)) L.its.push(it); else rows.push({ y: it.y, its: [it] });
+    });
+    return rows.map(function (L) {
+      L.its.sort(function (p, q) { return p.x - q.x; });
+      var cells = [], c = null, h = 0;
+      L.its.forEach(function (it) {
+        h = Math.max(h, it.h);
+        var gap = c ? it.x - c.end : 0;
+        var atCol = !!(colXs && colXs.some(function (x) { return Math.abs(x - it.x) < 1.5; }));
+        if (c && (atCol || gap > Math.max(8, it.h * 1.6))) { cells.push(c); c = null; }
+        if (!c) c = { x: it.x, text: it.str, end: it.x + it.w };
+        else { c.text += (gap > it.h * 0.1 && !/\s$/.test(c.text) && !/^\s/.test(it.str) ? ' ' : '') + it.str; c.end = it.x + it.w; }
+      });
+      if (c) cells.push(c);
+      cells.forEach(function (k) { k.text = k.text.replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').trim(); });
+      return { y: L.y, h: h, cells: cells };
+    });
+  }
+  function join(a, b) { return (a + ' ' + b).replace(/\s+/g, ' ').trim(); }
+  function joinLines(arr) {
+    var s = '';
+    arr.forEach(function (l, i) { s += (i ? (/[.!?:;)]$/.test(arr[i - 1]) ? '\n' : ' ') : '') + l; });
+    return s;
+  }
+
+  function columnXs(lines) {
+    var count = {};
+    lines.forEach(function (L) { if (L.cells.length >= 2) L.cells.slice(1).forEach(function (c) { var k = Math.round(c.x * 2) / 2; count[k] = (count[k] || 0) + 1; }); });
+    return Object.keys(count).filter(function (k) { return count[k] >= 2; }).map(Number);
+  }
+
+  function parsePdf(pages) {
+    var lines = [];
+    pages.forEach(function (its) { lines = lines.concat(toLines(its, columnXs(toLines(its)))); lines.push(null); });
+    var hs = lines.filter(Boolean).map(function (l) { return l.h; }).sort(function (a, b) { return a - b; });
+    var med = hs.length ? hs[Math.floor(hs.length / 2)] : 10;
+    var rows = [], rules = [], last = null, lastY = 0, inTable = false, rule = null;
+    function flushRule() { if (rule && rule.lines.length && !SKIP_RULE.test(rule.h)) rules.push({ h: rule.h, t: joinLines(rule.lines) }); rule = null; }
+    lines.forEach(function (L) {
+      if (!L) { last = null; inTable = false; return; }
+      var cs = L.cells;
+      if (!cs.length) return;
+      if (cs.length >= 2) {
+        if (last && lastY - L.y < 1.5 * L.h) { last.a = join(last.a, cs[0].text); last.b = join(last.b, cs[1].text); lastY = L.y; return; }
+        flushRule();
+        last = { a: cs[0].text, b: cs[1].text, ax: cs[0].x, bx: cs[1].x, first: !inTable };
+        rows.push(last); lastY = L.y; inTable = true; return;
+      }
+      var c = cs[0];
+      if (last && lastY - L.y < 1.5 * L.h && L.h <= med * 1.1) {
+        if (Math.abs(c.x - last.bx) < 3) { last.b = join(last.b, c.text); lastY = L.y; return; }
+        if (Math.abs(c.x - last.ax) < 3) { last.a = join(last.a, c.text); lastY = L.y; return; }
+      }
+      last = null; inTable = false;
+      if (L.h > med * 1.1 && c.text.length < 90) { flushRule(); rule = { h: c.text, lines: [] }; }
+      else if (rule) rule.lines.push(c.text);
+    });
+    flushRule();
+    var items = rows.filter(function (r) { return r.a && r.b && !(r.first && HEADER.test(r.a) && HEADER.test(r.b)); })
+      .map(function (r) { return { a: r.a, b: r.b }; });
+    return { items: dedupe(items), rules: rules };
+  }
+
+  /* ---------- Exercise builders ---------- */
+  function makeGap(item) {
+    var a = item.a.replace(/\|/g, '/').replace(/[{}]/g, '');
+    var hint = 'Meaning: ' + item.b;
+    var words = a.split(/\s+/), cand = [];
+    words.forEach(function (w, i) {
+      var core = w.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
+      if (core.length >= 3 && !STOP.has(core.toLowerCase().split("'")[0]) && !/[()\/\d]/.test(w)) cand.push(i);
+    });
+    if (words.length < 2 || !cand.length) return { text: '{{' + a + '}}', hint: hint, whole: true };
+    var i = cand[Math.floor(Math.random() * cand.length)];
+    var w = words[i], core = w.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
+    words[i] = w.replace(core, '{{' + core + '}}');
+    return { text: words.join(' '), hint: hint, whole: false };
+  }
+
+  function makeQuiz(items, n) {
+    var out = [];
+    sample(items, n).forEach(function (it) {
+      var dir = Math.random() < 0.5, key = dir ? 'b' : 'a';
+      var q = dir ? 'What does “' + it.a + '” mean?' : 'Which phrase means “' + it.b + '”?';
+      var seen = {}; seen[it[key].toLowerCase()] = 1;
+      var d = [];
+      shuffle(items).forEach(function (o) { var v = o[key], k = v.toLowerCase(); if (d.length < 3 && o !== it && !seen[k]) { seen[k] = 1; d.push(v); } });
+      if (!d.length) return;
+      out.push({ q: q, options: [it[key]].concat(d), answer: 0, explain: '“' + it.a + '” = ' + it.b });
+    });
+    return out;
+  }
+
+  return { parseMarkdown: parseMarkdown, parsePdf: parsePdf, makeGap: makeGap, makeQuiz: makeQuiz, shuffle: shuffle, sample: sample, dedupe: dedupe };
+})();
+if (typeof module !== 'undefined') module.exports = Parser;
+
+</script>
+<script>
+(function(){
+  var app = document.getElementById('app');
+  var LIB_KEY = 'revision-room:library:v1';
+  var S = {lessons: [], last: {}};
+  var IS_PWA = true;
+  var canSave = true, cur = null, notice = null, deferredInstall = null;
+  try {
+    var raw = localStorage.getItem(LIB_KEY);
+    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; } }
+  } catch (e) { canSave = false; }
+  function persist(){ try { localStorage.setItem(LIB_KEY, JSON.stringify(S)); canSave = true; } catch (e) { canSave = false; } }
+
+  if (window.pdfjsLib) { try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js'; } catch (e) {} }
+
+  var shuffle = Parser.shuffle, sample = Parser.sample;
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function $(s){ return app.querySelector(s); }
+  function plural(n, w, ws){ return n + ' ' + (n === 1 ? w : (ws || w + 's')); }
+  function norm(s){ return String(s).toLowerCase().replace(/[‘’]/g, "'").replace(/[.,!?;:]+$/, '').replace(/\s+/g, ' ').trim(); }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function top(i, n, label){
+    return '<div class="top"><button class="link" data-back>← Back</button><span class="count">' + esc(label) + '</span></div>' +
+      '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + i + '"><i style="width:' + (n ? i / n * 100 : 0) + '%"></i></div>';
+  }
+
+  var SAMPLE = [
+    '# Sample lesson', '', '## Grammar & structures', '',
+    '### Second conditional', 'If + past simple, would + infinitive. Used for unreal or unlikely situations now.', '- *If I had more time, I would learn Italian.*', '',
+    '### Third conditional', 'If + past perfect, would have + past participle. Used for unreal situations in the past.', '- *If she had left earlier, she wouldn\'t have missed the train.*', '',
+    '### I wish', '- I wish + past simple: regret about the present.', '- I wish + past perfect: regret about the past.', '',
+    '## Vocabulary & chunks', '',
+    '| English chunk | Russian |', '|---|---|',
+    '| to weigh the pros and cons | взвесить все за и против |',
+    '| to make up your mind | принять решение |',
+    '| to put off a decision | откладывать решение |',
+    '| sooner or later | рано или поздно |',
+    '| to be on the safe side | на всякий случай |',
+    '| to get on someone\'s nerves | действовать на нервы |',
+    '| to keep an eye on | присматривать за |',
+    '| to take a risk | рискнуть |',
+    '| in the long run | в конечном счёте |',
+    '| unless | если только не |'
+  ].join('\n');
+
+  /* ---------- install hint, shared files (installed app only) ---------- */
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredInstall = e; installHint(); });
+  function installHint(){
+    var n = document.getElementById('install');
+    if (!n || !IS_PWA) return;
+    var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+    if (standalone) { n.innerHTML = ''; return; }
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (deferredInstall) {
+      n.innerHTML = '<button class="btn ghost" id="inst" style="flex:none;margin-top:18px">Install as an app</button>';
+      document.getElementById('inst').onclick = function(){ deferredInstall.prompt(); deferredInstall = null; n.innerHTML = ''; };
+    } else if (ios) {
+      n.innerHTML = '<p class="foot" style="margin-top:18px">To install: tap the Share button, then Add to Home Screen.</p>';
+    }
+  }
+  function checkShared(){
+    if (!IS_PWA || !window.caches || !/[?&]shared=1/.test(location.search)) return;
+    caches.open('rr-shared').then(function(c){
+      return c.keys().then(function(keys){
+        return Promise.all(keys.map(function(k){
+          return c.match(k).then(function(r){ return r.blob(); }).then(function(b){ return new File([b], decodeURIComponent(k.url.split('/').pop()), {type: b.type}); });
+        })).then(function(files){
+          try { history.replaceState(null, '', location.pathname); } catch (e) {}
+          return Promise.all(keys.map(function(k){ return c.delete(k); })).then(function(){ if (files.length) handleFiles(files); });
+        });
+      });
+    }).catch(function(){});
+  }
+
+  /* ---------- navigation ---------- */
+  app.addEventListener('click', function(e){
+    var t;
+    if (e.target.closest('[data-back]')) { if (cur) menu(cur); else library(); return; }
+    if (e.target.closest('[data-lib]')) { library(); return; }
+    if ((t = e.target.closest('[data-mode]'))) { run(t.dataset.mode); return; }
+    if ((t = e.target.closest('[data-open]'))) { openLesson(t.dataset.open); return; }
+    if ((t = e.target.closest('[data-del]'))) { armDelete(t); return; }
+    if (e.target.closest('#sample')) { addLesson('Sample lesson', Parser.parseMarkdown(SAMPLE)); notice = {kind: 'good', text: 'Added “Sample lesson”. Remove it any time.'}; library(); }
+  });
+
+  function deckOf(id){
+    if (id === '*') {
+      var items = [], rules = [];
+      S.lessons.forEach(function(l){ items = items.concat(l.items); rules = rules.concat(l.rules || []); });
+      return {id: '*', title: 'All lessons mixed', items: Parser.dedupe(items), rules: rules};
+    }
+    var l = S.lessons.filter(function(x){ return x.id === id; })[0];
+    return l ? {id: l.id, title: l.title, items: l.items, rules: l.rules || []} : null;
+  }
+  function openLesson(id){ var d = deckOf(id); if (d) menu(d); }
+
+  function armDelete(btn){
+    if (btn.dataset.armed) {
+      var id = btn.dataset.del;
+      S.lessons = S.lessons.filter(function(l){ return l.id !== id; });
+      delete S.last[id]; persist(); notice = null; library(); return;
+    }
+    btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = 'Tap again to remove';
+    setTimeout(function(){ if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.textContent = 'Remove'; } }, 3000);
+  }
+
+  /* ---------- library ---------- */
+  function fmtDate(ts){ try { return new Date(ts).toLocaleDateString('en-GB', {day: 'numeric', month: 'short'}); } catch (e) { return ''; } }
+  function library(){
+    cur = null;
+    var ls = S.lessons, html =
+      '<header><p class="eyebrow"><span>Revision Room</span></p><h1><span class="hl">Your lessons</span></h1>' +
+      '<p class="sub">Add the notes from each lesson (PDF or Markdown). Every lesson becomes flashcards, gap-fill, a quiz and matching.</p></header>' +
+      '<label class="drop" id="drop" for="file"><span class="dt">Add lesson notes</span><span class="dd">Choose PDF or .md files, or drop them here</span></label>' +
+      '<input class="vh" type="file" id="file" multiple accept=".pdf,.md,.markdown,.txt,application/pdf,text/markdown,text/plain">' +
+      '<div id="msg" class="msg ' + (notice ? notice.kind : '') + '" role="status">' + (notice ? esc(notice.text) : '') + '</div>' +
+      (canSave ? '' : '<p class="warn">This browser is not letting the page save anything, so your lessons will be gone when you close the tab.</p>');
+    if (ls.length) {
+      html += '<section class="sec"><p class="label">Lessons</p><ul class="lessons">';
+      if (ls.length > 1) {
+        var tot = deckOf('*');
+        html += '<li class="lesson"><div class="lm"><b class="lt">All lessons mixed</b><span class="lc">' + plural(tot.items.length, 'chunk') + ' from ' + ls.length + ' lessons</span></div><div class="la"><button class="btn primary sm" data-open="*">Practise</button></div></li>';
+      }
+      ls.forEach(function(l){
+        var r = (l.rules || []).length;
+        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + plural(l.items.length, 'chunk') + (r ? ' · ' + plural(r, 'grammar note') : '') + ' · added ' + esc(fmtDate(l.added)) + '</span></div>' +
+          '<div class="la"><button class="btn primary sm" data-open="' + esc(l.id) + '">Practise</button><button class="btn ghost sm" data-del="' + esc(l.id) + '">Remove</button></div></li>';
+      });
+      html += '</ul></section>';
+    } else {
+      html += '<section class="how"><h2>What the notes should look like</h2>' +
+        '<p>A table with the phrase on the left and its meaning on the right. Headings with a short rule underneath become grammar flashcards.</p>' +
+        '<div class="mini"><table><thead><tr><th>English chunk</th><th>Russian</th></tr></thead><tbody>' +
+        '<tr><td>to make up your mind</td><td>принять решение</td></tr><tr><td>sooner or later</td><td>рано или поздно</td></tr><tr><td>to keep an eye on</td><td>присматривать за</td></tr></tbody></table></div>' +
+        '<button class="btn ghost" id="sample" style="flex:none">Try a sample lesson</button></section>';
+    }
+    html += '<div id="install"></div><p class="foot">Lessons are stored on this device only, so a phone and a laptop each keep their own list.</p>';
+    app.innerHTML = html;
+    notice = null;
+    installHint();
+    var input = $('#file'), drop = $('#drop');
+    input.addEventListener('change', function(){ var f = [].slice.call(input.files); input.value = ''; if (f.length) handleFiles(f); });
+    ['dragenter', 'dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+    ['dragleave', 'drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+    drop.addEventListener('drop', function(e){ var f = [].slice.call(e.dataTransfer && e.dataTransfer.files || []); if (f.length) handleFiles(f); });
+    window.scrollTo(0, 0);
+  }
+
+  function readText(file){ return new Promise(function(res, rej){ var fr = new FileReader(); fr.onload = function(){ res(String(fr.result)); }; fr.onerror = function(){ rej(new Error('read')); }; fr.readAsText(file); }); }
+  function readPdf(file){
+    return new Promise(function(res, rej){
+      if (!window.pdfjsLib) { rej(new Error('nolib')); return; }
+      var fr = new FileReader();
+      fr.onerror = function(){ rej(new Error('read')); };
+      fr.onload = function(){
+        pdfjsLib.getDocument({data: new Uint8Array(fr.result)}).promise.then(function(doc){
+          var pages = [], chain = Promise.resolve();
+          for (var n = 1; n <= doc.numPages; n++) (function(n){
+            chain = chain.then(function(){ return doc.getPage(n); }).then(function(pg){ return pg.getTextContent(); }).then(function(tc){
+              pages.push(tc.items.map(function(it){ var t = it.transform; return {str: it.str, x: t[4], y: t[5], w: it.width, h: it.height || Math.abs(t[3])}; }));
+            });
+          })(n);
+          return chain.then(function(){
+            var any = pages.some(function(p){ return p.some(function(i){ return i.str.trim(); }); });
+            if (!any) throw new Error('notext');
+            res(Parser.parsePdf(pages));
+          });
+        }).catch(rej);
+      };
+      fr.readAsArrayBuffer(file);
+    });
+  }
+
+  function addLesson(title, r){
+    var ex = S.lessons.filter(function(l){ return l.title.toLowerCase() === title.toLowerCase(); })[0];
+    if (ex) { ex.items = r.items; ex.rules = r.rules; ex.added = Date.now(); }
+    else S.lessons.unshift({id: uid(), title: title, added: Date.now(), items: r.items, rules: r.rules});
+    persist();
+  }
+
+  async function handleFiles(files){
+    var msg = $('#msg'), ok = [], bad = [];
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i], title = f.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ').trim() || 'Lesson';
+      msg.className = 'msg'; msg.textContent = 'Reading ' + f.name + '…';
+      try {
+        var isPdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
+        var r = isPdf ? await readPdf(f) : Parser.parseMarkdown(await readText(f));
+        if (!r.items.length) bad.push('“' + f.name + '”: no phrase table found. The notes need a table with the phrase on the left and its meaning on the right.');
+        else { addLesson(title, r); ok.push('“' + title + '”: ' + plural(r.items.length, 'chunk') + (r.rules.length ? ', ' + plural(r.rules.length, 'grammar note') : '')); }
+      } catch (e) {
+        var why = e && e.message === 'notext' ? 'this PDF has no selectable text (it looks like a scan). Send the .md version instead.'
+          : e && e.message === 'nolib' ? 'the PDF reader did not load. Check your connection and reload the page.'
+          : 'could not read this file. Try the .md version.';
+        bad.push('“' + f.name + '”: ' + why);
+      }
+    }
+    notice = {kind: bad.length ? (ok.length ? '' : 'bad') : 'good', text: (ok.length ? 'Added ' + ok.join('; ') + '.' : '') + (ok.length && bad.length ? '\n' : '') + bad.join('\n')};
+    library();
+  }
+
+  /* ---------- lesson menu ---------- */
+  var MODES = [
+    {id: 'cards', name: 'Flashcards',    min: 1, count: function(d){ return plural(d.items.length + d.rules.length, 'card'); }},
+    {id: 'gaps',  name: 'Fill the gaps', min: 1, count: function(d){ return Math.min(10, d.items.length) + ' per round'; }},
+    {id: 'quiz',  name: 'Quiz',          min: 2, count: function(d){ return Math.min(10, d.items.length) + ' per round'; }},
+    {id: 'match', name: 'Matching',      min: 3, count: function(d){ return plural(Math.min(12, d.items.length), 'pair'); }}
+  ];
+  function menu(deck){
+    cur = deck;
+    var last = S.last[deck.id] || {};
+    app.innerHTML =
+      '<button class="link" data-lib>← All lessons</button>' +
+      '<header><p class="eyebrow"><span>' + plural(deck.items.length, 'chunk') + (deck.rules.length ? ' · ' + plural(deck.rules.length, 'grammar note') : '') + '</span></p>' +
+      '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
+      '<div class="tiles">' + MODES.map(function(m){
+        var n = m.id === 'cards' ? deck.items.length + deck.rules.length : deck.items.length, off = n < m.min;
+        return '<button class="tile" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + m.name + '</span><span class="tc">' + (off ? 'Needs more chunks' : m.count(deck)) + '</span>' +
+          '<span class="tl">' + (last[m.id] ? 'Last: ' + esc(last[m.id]) : 'Not tried yet') + '</span></button>';
+      }).join('') + '</div>';
+    window.scrollTo(0, 0);
+  }
+  function run(id){ if (id === 'cards') flash(cur); else if (id === 'gaps') gaps(cur); else if (id === 'quiz') quiz(cur); else if (id === 'match') match(cur); }
+
+  function finish(id, o){
+    if (o.save !== false) { S.last[cur.id] = S.last[cur.id] || {}; S.last[cur.id][id] = o.last; persist(); }
+    var msg = o.pct >= 90 ? 'Clean run.' : o.pct >= 60 ? 'Solid. A few to revisit.' : 'Worth another pass.';
+    app.innerHTML = '<div class="res"><p class="label">Finished</p><p class="big">' + esc(o.big) + '</p><p class="sub">' + esc(o.sub) + '</p><p class="msg2">' + msg + '</p>' +
+      '<div class="row">' + (o.retry ? '<button class="btn primary" id="retry">Practise the mistakes</button>' : '') +
+      '<button class="btn ' + (o.retry ? 'ghost' : 'primary') + '" id="again">Go again</button><button class="btn ghost" data-back>Back to lesson</button></div></div>';
+    if (o.retry) $('#retry').onclick = o.retry;
+    $('#again').onclick = o.again;
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- Flashcards ---------- */
+  function flash(deck){
+    var cards = deck.items.map(function(it){ return {front: it.a, back: it.b, kind: 'chunk'}; })
+      .concat(deck.rules.map(function(r){ return {front: r.h, back: r.t, kind: 'rule'}; }));
+    var total = cards.length, q = shuffle(cards.map(function(_, i){ return i; }));
+    var known = 0, rev = false, flipped = false, again = {}, againN = 0;
+    function draw(){
+      if (!q.length) {
+        var first = total - againN;
+        return finish('cards', {big: first + ' / ' + total, sub: 'cards known on the first try', pct: first / total * 100, last: first + '/' + total, again: function(){ flash(deck); }});
+      }
+      var c = cards[q[0]], swap = rev && c.kind !== 'rule';
+      var front = swap ? c.back : c.front, back = swap ? c.front : c.back;
+      var lblQ = c.kind === 'rule' ? 'Grammar' : 'Question', lblA = c.kind === 'rule' ? 'Rule' : 'Answer';
+      app.innerHTML = top(known, total, known + ' / ' + total + ' known') +
+        '<button class="flash" id="flip" aria-label="' + (flipped ? lblA : lblQ) + '. Press to flip the card."><span class="side">' + (flipped ? lblA : lblQ) + '</span>' +
+        '<span class="face ' + (flipped ? 'back' : '') + (flipped && c.kind === 'rule' ? ' rule' : '') + '">' + esc(flipped ? back : front) + '</span></button>' +
+        (flipped ? '<div class="row"><button class="btn ghost" id="again">Again</button><button class="btn primary" id="got">Got it</button></div>' : '<p class="hint">Tap the card to flip it.</p>') +
+        '<button class="link small" id="swap">' + (rev ? 'Show the question side first' : 'Show the answer side first') + '</button>';
+      $('#flip').onclick = function(){ flipped = !flipped; draw(); if (flipped && $('#got')) $('#got').focus(); };
+      $('#swap').onclick = function(){ rev = !rev; flipped = false; draw(); };
+      if (flipped) {
+        $('#got').onclick = function(){ q.shift(); known++; flipped = false; draw(); };
+        $('#again').onclick = function(){ if (!again[q[0]]) { again[q[0]] = 1; againN++; } q.push(q.shift()); flipped = false; draw(); };
+      }
+    }
+    draw();
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- Fill the gaps ---------- */
+  function gaps(deck, list){
+    var items = list || sample(deck.items, 10).map(Parser.makeGap), n = items.length, i = 0, right = 0, wrong = [];
+    function draw(){
+      if (i >= n) {
+        return finish('gaps', {big: right + ' / ' + n, sub: 'sentences correct', pct: right / n * 100, last: right + '/' + n, save: !list,
+          again: function(){ gaps(deck); }, retry: wrong.length ? function(){ gaps(deck, wrong); } : null});
+      }
+      var it = items[i], blanks = [], k = 0;
+      var html = it.text.split(/\{\{(.+?)\}\}/g).map(function(p, idx){
+        if (idx % 2 === 0) return esc(p);
+        blanks.push(p); k++;
+        return '<input class="gap" type="text" style="width:' + Math.max(4, p.split('|')[0].length + 2) + 'ch" aria-label="Blank ' + k + '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">';
+      }).join('');
+      app.innerHTML = top(i, n, (i + 1) + ' / ' + n) +
+        '<p class="label">' + (it.whole ? 'Type the phrase' : 'Fill in the gap') + '</p><p class="sentence">' + html + '</p>' +
+        (it.hint ? '<p class="hint">' + esc(it.hint) + '</p>' : '') +
+        '<div id="fb" role="status"></div><div class="row" id="act"><button class="btn primary" id="check">Check</button></div>';
+      var ins = [].slice.call(app.querySelectorAll('input.gap')), checked = false;
+      if (ins[0]) ins[0].focus();
+      function doCheck(){
+        if (checked) return; checked = true;
+        var ok = true;
+        ins.forEach(function(inp, j){
+          var accepted = blanks[j].split('|').map(norm), good = accepted.indexOf(norm(inp.value)) > -1;
+          inp.readOnly = true; inp.classList.add(good ? 'ok' : 'no');
+          if (!good) { ok = false; inp.insertAdjacentHTML('afterend', '<span class="fix">' + esc(blanks[j].split('|')[0]) + '</span>'); }
+        });
+        if (ok) right++; else wrong.push(it);
+        $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + (ok ? 'Correct.' : 'Not quite.') + '</b> ' + (ok ? '' : 'The right answer is in green.') + '</div>';
+        $('#act').innerHTML = '<button class="btn primary" id="next">' + (i === n - 1 ? 'See results' : 'Next') + '</button>';
+        $('#next').onclick = function(){ i++; draw(); };
+        $('#next').focus();
+      }
+      ins.forEach(function(inp){ inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); doCheck(); } }); });
+      $('#check').onclick = doCheck;
+    }
+    draw();
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- Quiz ---------- */
+  function quiz(deck, list){
+    var items = list || Parser.makeQuiz(deck.items, 10), n = items.length, i = 0, right = 0, wrong = [];
+    function draw(){
+      if (i >= n) {
+        return finish('quiz', {big: right + ' / ' + n, sub: 'questions correct', pct: right / n * 100, last: right + '/' + n, save: !list,
+          again: function(){ quiz(deck); }, retry: wrong.length ? function(){ quiz(deck, wrong); } : null});
+      }
+      var it = items[i];
+      var opts = shuffle(it.options.map(function(t, idx){ return {t: t, c: idx === it.answer}; }));
+      app.innerHTML = top(i, n, (i + 1) + ' / ' + n) +
+        '<p class="q">' + esc(it.q) + '</p><div class="opts">' +
+        opts.map(function(o, j){ return '<button class="opt" data-j="' + j + '"><span class="k">' + 'ABCDEF'[j] + '</span><span>' + esc(o.t) + '</span></button>'; }).join('') +
+        '</div><div id="fb" role="status"></div><div class="row" id="act"></div>';
+      [].forEach.call(app.querySelectorAll('.opt'), function(btn){
+        btn.onclick = function(){
+          var ok = opts[+btn.dataset.j].c;
+          [].forEach.call(app.querySelectorAll('.opt'), function(b){
+            var o = opts[+b.dataset.j]; b.disabled = true;
+            if (o.c) b.classList.add('right'); else if (b === btn) b.classList.add('wrong'); else b.classList.add('dim');
+          });
+          if (ok) right++; else wrong.push(it);
+          $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + (ok ? 'Correct.' : 'Not quite.') + '</b> ' + (it.explain ? esc(it.explain) : '') + '</div>';
+          $('#act').innerHTML = '<button class="btn primary" id="next">' + (i === n - 1 ? 'See results' : 'Next') + '</button>';
+          $('#next').onclick = function(){ i++; draw(); };
+          $('#next').focus();
+        };
+      });
+    }
+    draw();
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- Matching ---------- */
+  function match(deck){
+    var pairs = sample(deck.items, 12).map(function(p, i){ return {id: i, a: p.a, b: p.b}; });
+    var size = pairs.length <= 7 ? pairs.length : 6, rounds = [];
+    for (var s = 0; s < pairs.length; s += size) rounds.push(pairs.slice(s, s + size));
+    if (rounds.length > 1 && rounds[rounds.length - 1].length < 3) { var tail = rounds.pop(); rounds[rounds.length - 1] = rounds[rounds.length - 1].concat(tail); }
+    var r = 0, slips = 0, total = pairs.length, doneTotal = 0;
+    function draw(){
+      if (r >= rounds.length) {
+        var pct = total / (total + slips) * 100, s2 = slips === 0 ? 'No slips' : slips + (slips === 1 ? ' slip' : ' slips');
+        return finish('match', {big: s2, sub: total + ' pairs matched', pct: pct, last: s2, again: function(){ match(deck); }});
+      }
+      var round = rounds[r], left = shuffle(round), right = shuffle(round), sel = null, matched = 0;
+      function label(){ return 'Round ' + (r + 1) + ' of ' + rounds.length + ' · ' + slips + (slips === 1 ? ' slip' : ' slips'); }
+      app.innerHTML = top(doneTotal, total, label()) +
+        '<p class="label">Tap one on the left, then its partner on the right</p><div class="cols">' +
+        '<div class="col">' + left.map(function(p){ return '<button class="chip" data-side="a" data-id="' + p.id + '">' + esc(p.a) + '</button>'; }).join('') + '</div>' +
+        '<div class="col">' + right.map(function(p){ return '<button class="chip" data-side="b" data-id="' + p.id + '">' + esc(p.b) + '</button>'; }).join('') + '</div></div>';
+      [].forEach.call(app.querySelectorAll('.chip'), function(chip){
+        chip.onclick = function(){
+          if (chip.classList.contains('done')) return;
+          var side = chip.dataset.side, id = chip.dataset.id;
+          if (sel && sel.el === chip) { chip.classList.remove('sel'); sel = null; return; }
+          if (sel && sel.side !== side) {
+            if (sel.id === id) {
+              sel.el.classList.remove('sel'); sel.el.classList.add('done'); chip.classList.add('done');
+              sel = null; matched++; doneTotal++;
+              $('.prog i').style.width = (doneTotal / total * 100) + '%';
+              if (matched === round.length) setTimeout(function(){ r++; draw(); }, 500);
+            } else {
+              slips++;
+              var other = sel.el; other.classList.remove('sel'); sel = null;
+              other.classList.add('slip'); chip.classList.add('slip');
+              setTimeout(function(){ other.classList.remove('slip'); chip.classList.remove('slip'); }, 420);
+              $('.count').textContent = label();
+            }
+            return;
+          }
+          if (sel) sel.el.classList.remove('sel');
+          chip.classList.add('sel'); sel = {el: chip, side: side, id: id};
+        };
+      });
+    }
+    draw();
+    window.scrollTo(0, 0);
+  }
+
+  library();
+  if (IS_PWA && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+  if (IS_PWA && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){});
+  checkShared();
+})();
+</script>
+</body>
+</html>
