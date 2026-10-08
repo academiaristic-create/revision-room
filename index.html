@@ -74,7 +74,7 @@ h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:7
 .lm{flex:1 1 200px;min-width:0;display:grid;gap:2px}
 .lt{font:700 19px/1.25 var(--display);letter-spacing:-.01em;overflow-wrap:anywhere}
 .lc{color:var(--muted);font-size:14px}
-.la{display:flex;gap:8px;flex:none}
+.la{display:flex;flex-wrap:wrap;gap:8px;flex:none}
 .sec{margin-top:30px}
 .how{margin-top:30px}
 .how h2{font-size:21px;margin:0 0 6px}
@@ -117,7 +117,6 @@ h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:7
 .flash .side{position:absolute;top:16px;left:20px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .flash .face{font:700 clamp(24px,6vw,30px)/1.25 var(--display);letter-spacing:-.01em;animation:pop .18s ease;overflow-wrap:anywhere}
 .flash .face.back{color:var(--accent)}
-.flash .face.rule{font:500 clamp(16px,4.2vw,18px)/1.55 var(--body);letter-spacing:0;color:var(--ink);white-space:pre-line}
 @keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
 /* gap fill */
@@ -159,6 +158,26 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 .res .big{font:700 clamp(56px,16vw,84px)/1 var(--display);letter-spacing:-.03em;margin:4px 0 6px;font-variant-numeric:tabular-nums}
 .res .msg2{font:700 22px/1.2 var(--display);margin:18px 0 0}
 
+/* reader */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:6px;margin-bottom:10px;background:var(--bg)}
+.zoom{display:flex;align-items:center;gap:6px}
+.zbtn{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:22px;line-height:1;cursor:pointer}
+.zbtn:disabled{opacity:.4;cursor:default}
+.zl{min-width:3.4em;text-align:center;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rt{font-size:clamp(22px,6vw,30px);line-height:1.15;margin:0 0 6px;overflow-wrap:anywhere}
+.pages{overflow-x:auto;margin-top:14px;-webkit-overflow-scrolling:touch}
+.pg{display:block;margin:0 0 12px;background:#fff;border:1px solid var(--line);border-radius:6px}
+.doc{margin-top:14px;padding:6px 18px 12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-wrap:anywhere}
+.doc h2,.doc h3,.doc h4{font-family:var(--display);letter-spacing:-.01em;line-height:1.25;margin:20px 0 8px}
+.doc h2{font-size:24px}.doc h3{font-size:20px}.doc h4{font-size:17px}
+.doc p,.doc li{margin:0 0 10px}.doc ul,.doc ol{padding-left:22px;margin:0 0 10px}
+.doc code{background:var(--tint);padding:1px 5px;border-radius:5px;font-size:.92em}
+.tw{overflow-x:auto;margin:0 0 14px}
+.doc table{border-collapse:collapse;width:100%;font-size:15px}
+.doc th,.doc td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+.doc th{background:var(--tint)}
+.rmsg{margin:18px 0;color:var(--muted)}
+
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -171,7 +190,7 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 /* Lesson-notes parser and exercise builders. Pure functions, no DOM. */
 var Parser = (function () {
   var HEADER = /^(english|spanish|serbian|russian|german|french|italian|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
-  var SKIP_RULE = /vocab|chunk|слов|лексик|phrase|expression/i;
+  var VOCAB = /vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabular|rečnik|izraz/i;
   var STOP = new Set('a an the to of in on at for with and or but is are was were be been being am do does did have has had will would can could should may might must shall not no it its this that these those you your he she we they them his her our their my me one ones some any about up out off over into from by as if than then so too very just also more most much many get got go goes going made make sth smth smb sb someone something somebody'.split(' '));
 
   function clean(s) {
@@ -184,6 +203,11 @@ var Parser = (function () {
     var seen = {}, out = [];
     items.forEach(function (it) { var k = it.a.toLowerCase(); if (!seen[k]) { seen[k] = 1; out.push(it); } });
     return out;
+  }
+  /* If the notes have a Vocabulary/Chunks section, use only the tables inside it. Otherwise use every table. */
+  function onlyVocab(items) {
+    var v = items.filter(function (it) { return it.v; });
+    return (v.length ? v : items).map(function (it) { return { a: it.a, b: it.b }; });
   }
   function isHeaderRow(row) { return row.length >= 2 && HEADER.test(row[0]) && HEADER.test(row[1]); }
 
@@ -204,37 +228,38 @@ var Parser = (function () {
   function isSep(cells) { return cells.length > 0 && cells.every(function (c) { return /^:?-+:?$/.test(c.replace(/\s/g, '')); }); }
 
   function parseMarkdown(text) {
-    var lines = String(text).replace(/\r/g, '').split('\n'), items = [], rules = [], cur = null, i = 0;
-    function flush() { if (cur && cur.t.length && !SKIP_RULE.test(cur.h)) rules.push({ h: cur.h, t: cur.t.join('\n') }); cur = null; }
-    function addTable(rows) {
+    var lines = String(text).replace(/\r/g, '').split('\n'), items = [], i = 0, vocabLevel = 0;
+    function addTable(rows, inVocab) {
       var start = 0;
       if (rows.length > 1 && isSep(rows[1])) start = 2; else if (rows.length && isHeaderRow(rows[0])) start = 1;
       for (var r = start; r < rows.length; r++) {
         if (isSep(rows[r])) continue;
         var a = rows[r][0], b = rows[r][1];
-        if (a && b) items.push({ a: a, b: b });
+        if (a && b) items.push({ a: a, b: b, v: inVocab });
       }
     }
     while (i < lines.length) {
       var tr = lines[i].trim();
       var hm = /^(#{1,6})\s+(.*?)\s*#*$/.exec(tr);
-      if (hm) { flush(); if (hm[1].length >= 2) cur = { h: clean(hm[2]), t: [] }; i++; continue; }
+      if (hm) {
+        var lvl = hm[1].length;
+        if (VOCAB.test(hm[2])) vocabLevel = lvl; else if (vocabLevel && lvl <= vocabLevel) vocabLevel = 0;
+        i++; continue;
+      }
       if (tr[0] === '|') {
         var rows = [];
         while (i < lines.length && lines[i].trim()[0] === '|') { rows.push(splitRow(lines[i])); i++; }
-        addTable(rows); continue;
+        addTable(rows, !!vocabLevel); continue;
       }
-      if (tr && cur) cur.t.push(clean(tr.replace(/^[-*+]\s+/, '• ')));
       i++;
     }
-    flush();
     if (!items.length) {
       lines.forEach(function (ln) {
-        var m = /^\s*(?:[-*+]|\d+[.)])\s+(.+?)\s+(?:—|–|=|→)\s+(.+)$/.exec(ln);
-        if (m) { var a = clean(m[1]), b = clean(m[2]); if (a && b) items.push({ a: a, b: b }); }
+        var m = /^\s*(?:[-*+]|\d+[.)])\s+(.+?)\s+(?:\u2014|\u2013|=|\u2192)\s+(.+)$/.exec(ln);
+        if (m) { var a = clean(m[1]), b = clean(m[2]); if (a && b) items.push({ a: a, b: b, v: false }); }
       });
     }
-    return { items: dedupe(items), rules: rules };
+    return { items: dedupe(onlyVocab(items)) };
   }
 
   /* ---------- PDF (items come from pdf.js: {str, x, y, w, h}) ---------- */
@@ -262,11 +287,6 @@ var Parser = (function () {
     });
   }
   function join(a, b) { return (a + ' ' + b).replace(/\s+/g, ' ').trim(); }
-  function joinLines(arr) {
-    var s = '';
-    arr.forEach(function (l, i) { s += (i ? (/[.!?:;)]$/.test(arr[i - 1]) ? '\n' : ' ') : '') + l; });
-    return s;
-  }
 
   function columnXs(lines) {
     var count = {};
@@ -279,16 +299,14 @@ var Parser = (function () {
     pages.forEach(function (its) { lines = lines.concat(toLines(its, columnXs(toLines(its)))); lines.push(null); });
     var hs = lines.filter(Boolean).map(function (l) { return l.h; }).sort(function (a, b) { return a - b; });
     var med = hs.length ? hs[Math.floor(hs.length / 2)] : 10;
-    var rows = [], rules = [], last = null, lastY = 0, inTable = false, rule = null;
-    function flushRule() { if (rule && rule.lines.length && !SKIP_RULE.test(rule.h)) rules.push({ h: rule.h, t: joinLines(rule.lines) }); rule = null; }
+    var rows = [], last = null, lastY = 0, inTable = false, vocabH = 0;
     lines.forEach(function (L) {
       if (!L) { last = null; inTable = false; return; }
       var cs = L.cells;
       if (!cs.length) return;
       if (cs.length >= 2) {
         if (last && lastY - L.y < 1.5 * L.h) { last.a = join(last.a, cs[0].text); last.b = join(last.b, cs[1].text); lastY = L.y; return; }
-        flushRule();
-        last = { a: cs[0].text, b: cs[1].text, ax: cs[0].x, bx: cs[1].x, first: !inTable };
+        last = { a: cs[0].text, b: cs[1].text, ax: cs[0].x, bx: cs[1].x, first: !inTable, v: !!vocabH };
         rows.push(last); lastY = L.y; inTable = true; return;
       }
       var c = cs[0];
@@ -297,13 +315,13 @@ var Parser = (function () {
         if (Math.abs(c.x - last.ax) < 3) { last.a = join(last.a, c.text); lastY = L.y; return; }
       }
       last = null; inTable = false;
-      if (L.h > med * 1.1 && c.text.length < 90) { flushRule(); rule = { h: c.text, lines: [] }; }
-      else if (rule) rule.lines.push(c.text);
+      if (L.h > med * 1.1 && c.text.length < 90) {
+        if (VOCAB.test(c.text)) vocabH = L.h; else if (vocabH && L.h >= vocabH - 0.3) vocabH = 0;
+      }
     });
-    flushRule();
     var items = rows.filter(function (r) { return r.a && r.b && !(r.first && HEADER.test(r.a) && HEADER.test(r.b)); })
-      .map(function (r) { return { a: r.a, b: r.b }; });
-    return { items: dedupe(items), rules: rules };
+      .map(function (r) { return { a: r.a, b: r.b, v: r.v }; });
+    return { items: dedupe(onlyVocab(items)) };
   }
 
   /* ---------- Exercise builders ---------- */
@@ -354,6 +372,35 @@ if (typeof module !== 'undefined') module.exports = Parser;
   } catch (e) { canSave = false; }
   function persist(){ try { localStorage.setItem(LIB_KEY, JSON.stringify(S)); canSave = true; } catch (e) { canSave = false; } }
 
+  /* Original files live in IndexedDB so students can read them later. Everything degrades to "no Read button" if it is unavailable. */
+  var have = {};
+  function idb(){
+    return new Promise(function(res){
+      try {
+        var rq = indexedDB.open('revision-room', 1);
+        rq.onupgradeneeded = function(){ rq.result.createObjectStore('files'); };
+        rq.onsuccess = function(){ res(rq.result); };
+        rq.onerror = rq.onblocked = function(){ res(null); };
+      } catch (e) { res(null); }
+    });
+  }
+  function dbReq(mode, fn){
+    return idb().then(function(db){
+      if (!db) return null;
+      return new Promise(function(res){
+        try {
+          var tx = db.transaction('files', mode), out = fn(tx.objectStore('files'));
+          tx.oncomplete = function(){ res(out && 'result' in out ? out.result : true); };
+          tx.onerror = tx.onabort = function(){ res(null); };
+        } catch (e) { res(null); }
+      });
+    });
+  }
+  function putFile(id, rec){ return dbReq('readwrite', function(st){ return st.put(rec, id); }).then(function(r){ if (r !== null) have[id] = 1; return r !== null; }); }
+  function getFile(id){ return dbReq('readonly', function(st){ return st.get(id); }); }
+  function delFile(id){ delete have[id]; return dbReq('readwrite', function(st){ return st.delete(id); }); }
+  function loadKeys(){ return dbReq('readonly', function(st){ return st.getAllKeys(); }).then(function(k){ have = {}; if (Array.isArray(k)) k.forEach(function(x){ have[x] = 1; }); }); }
+
   if (window.pdfjsLib) { try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js'; } catch (e) {} }
 
   var shuffle = Parser.shuffle, sample = Parser.sample;
@@ -368,10 +415,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
   }
 
   var SAMPLE = [
-    '# Sample lesson', '', '## Grammar & structures', '',
-    '### Second conditional', 'If + past simple, would + infinitive. Used for unreal or unlikely situations now.', '- *If I had more time, I would learn Italian.*', '',
-    '### Third conditional', 'If + past perfect, would have + past participle. Used for unreal situations in the past.', '- *If she had left earlier, she wouldn\'t have missed the train.*', '',
-    '### I wish', '- I wish + past simple: regret about the present.', '- I wish + past perfect: regret about the past.', '',
+    '# Sample lesson', '',
     '## Vocabulary & chunks', '',
     '| English chunk | Russian |', '|---|---|',
     '| to weigh the pros and cons | взвесить все за и против |',
@@ -422,18 +466,19 @@ if (typeof module !== 'undefined') module.exports = Parser;
     if (e.target.closest('[data-lib]')) { library(); return; }
     if ((t = e.target.closest('[data-mode]'))) { run(t.dataset.mode); return; }
     if ((t = e.target.closest('[data-open]'))) { openLesson(t.dataset.open); return; }
+    if ((t = e.target.closest('[data-read]'))) { reader(t.dataset.read); return; }
     if ((t = e.target.closest('[data-del]'))) { armDelete(t); return; }
-    if (e.target.closest('#sample')) { addLesson('Sample lesson', Parser.parseMarkdown(SAMPLE)); notice = {kind: 'good', text: 'Added “Sample lesson”. Remove it any time.'}; library(); }
+    if (e.target.closest('#sample')) { var sid = addLesson('Sample lesson', Parser.parseMarkdown(SAMPLE)); putFile(sid, {type: 'md', name: 'Sample lesson.md', text: SAMPLE}); notice = {kind: 'good', text: 'Added “Sample lesson”. Remove it any time.'}; library(); }
   });
 
   function deckOf(id){
     if (id === '*') {
-      var items = [], rules = [];
-      S.lessons.forEach(function(l){ items = items.concat(l.items); rules = rules.concat(l.rules || []); });
-      return {id: '*', title: 'All lessons mixed', items: Parser.dedupe(items), rules: rules};
+      var items = [];
+      S.lessons.forEach(function(l){ items = items.concat(l.items); });
+      return {id: '*', title: 'All lessons mixed', items: Parser.dedupe(items)};
     }
     var l = S.lessons.filter(function(x){ return x.id === id; })[0];
-    return l ? {id: l.id, title: l.title, items: l.items, rules: l.rules || []} : null;
+    return l ? {id: l.id, title: l.title, items: l.items} : null;
   }
   function openLesson(id){ var d = deckOf(id); if (d) menu(d); }
 
@@ -441,7 +486,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
     if (btn.dataset.armed) {
       var id = btn.dataset.del;
       S.lessons = S.lessons.filter(function(l){ return l.id !== id; });
-      delete S.last[id]; persist(); notice = null; library(); return;
+      delete S.last[id]; persist(); notice = null; delFile(id).then(library); return;
     }
     btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = 'Tap again to remove';
     setTimeout(function(){ if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.textContent = 'Remove'; } }, 3000);
@@ -453,7 +498,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
     cur = null;
     var ls = S.lessons, html =
       '<header><p class="eyebrow"><span>Revision Room</span></p><h1><span class="hl">Your lessons</span></h1>' +
-      '<p class="sub">Add the notes from each lesson (PDF or Markdown). Every lesson becomes flashcards, gap-fill, a quiz and matching.</p></header>' +
+      '<p class="sub">Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.</p></header>' +
       '<label class="drop" id="drop" for="file"><span class="dt">Add lesson notes</span><span class="dd">Choose PDF or .md files, or drop them here</span></label>' +
       '<input class="vh" type="file" id="file" multiple accept=".pdf,.md,.markdown,.txt,application/pdf,text/markdown,text/plain">' +
       '<div id="msg" class="msg ' + (notice ? notice.kind : '') + '" role="status">' + (notice ? esc(notice.text) : '') + '</div>' +
@@ -465,14 +510,13 @@ if (typeof module !== 'undefined') module.exports = Parser;
         html += '<li class="lesson"><div class="lm"><b class="lt">All lessons mixed</b><span class="lc">' + plural(tot.items.length, 'chunk') + ' from ' + ls.length + ' lessons</span></div><div class="la"><button class="btn primary sm" data-open="*">Practise</button></div></li>';
       }
       ls.forEach(function(l){
-        var r = (l.rules || []).length;
-        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + plural(l.items.length, 'chunk') + (r ? ' · ' + plural(r, 'grammar note') : '') + ' · added ' + esc(fmtDate(l.added)) + '</span></div>' +
-          '<div class="la"><button class="btn primary sm" data-open="' + esc(l.id) + '">Practise</button><button class="btn ghost sm" data-del="' + esc(l.id) + '">Remove</button></div></li>';
+        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + plural(l.items.length, 'chunk') + ' · added ' + esc(fmtDate(l.added)) + '</span></div>' +
+          '<div class="la">' + (have[l.id] ? '<button class="btn ghost sm" data-read="' + esc(l.id) + '">Read</button>' : '') + '<button class="btn primary sm" data-open="' + esc(l.id) + '">Practise</button><button class="btn ghost sm" data-del="' + esc(l.id) + '">Remove</button></div></li>';
       });
       html += '</ul></section>';
     } else {
       html += '<section class="how"><h2>What the notes should look like</h2>' +
-        '<p>A table with the phrase on the left and its meaning on the right. Headings with a short rule underneath become grammar flashcards.</p>' +
+        '<p>The exercises come from the table under \u201cVocabulary &amp; chunks\u201d: the phrase on the left and its meaning on the right. The whole file stays in the app, so you can read the theory first with the Read button.</p>' +
         '<div class="mini"><table><thead><tr><th>English chunk</th><th>Russian</th></tr></thead><tbody>' +
         '<tr><td>to make up your mind</td><td>принять решение</td></tr><tr><td>sooner or later</td><td>рано или поздно</td></tr><tr><td>to keep an eye on</td><td>присматривать за</td></tr></tbody></table></div>' +
         '<button class="btn ghost" id="sample" style="flex:none">Try a sample lesson</button></section>';
@@ -496,6 +540,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
       var fr = new FileReader();
       fr.onerror = function(){ rej(new Error('read')); };
       fr.onload = function(){
+        var keep = fr.result.slice(0);
         pdfjsLib.getDocument({data: new Uint8Array(fr.result)}).promise.then(function(doc){
           var pages = [], chain = Promise.resolve();
           for (var n = 1; n <= doc.numPages; n++) (function(n){
@@ -506,7 +551,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
           return chain.then(function(){
             var any = pages.some(function(p){ return p.some(function(i){ return i.str.trim(); }); });
             if (!any) throw new Error('notext');
-            res(Parser.parsePdf(pages));
+            res({r: Parser.parsePdf(pages), data: keep});
           });
         }).catch(rej);
       };
@@ -516,9 +561,11 @@ if (typeof module !== 'undefined') module.exports = Parser;
 
   function addLesson(title, r){
     var ex = S.lessons.filter(function(l){ return l.title.toLowerCase() === title.toLowerCase(); })[0];
-    if (ex) { ex.items = r.items; ex.rules = r.rules; ex.added = Date.now(); }
-    else S.lessons.unshift({id: uid(), title: title, added: Date.now(), items: r.items, rules: r.rules});
+    var id;
+    if (ex) { ex.items = r.items; delete ex.rules; ex.added = Date.now(); id = ex.id; }
+    else { id = uid(); S.lessons.unshift({id: id, title: title, added: Date.now(), items: r.items}); }
     persist();
+    return id;
   }
 
   async function handleFiles(files){
@@ -528,9 +575,11 @@ if (typeof module !== 'undefined') module.exports = Parser;
       msg.className = 'msg'; msg.textContent = 'Reading ' + f.name + '…';
       try {
         var isPdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
-        var r = isPdf ? await readPdf(f) : Parser.parseMarkdown(await readText(f));
+        var r, rec;
+        if (isPdf) { var o = await readPdf(f); r = o.r; rec = {type: 'pdf', name: f.name, data: o.data}; }
+        else { var txt = await readText(f); r = Parser.parseMarkdown(txt); rec = {type: 'md', name: f.name, text: txt}; }
         if (!r.items.length) bad.push('“' + f.name + '”: no phrase table found. The notes need a table with the phrase on the left and its meaning on the right.');
-        else { addLesson(title, r); ok.push('“' + title + '”: ' + plural(r.items.length, 'chunk') + (r.rules.length ? ', ' + plural(r.rules.length, 'grammar note') : '')); }
+        else { var lid = addLesson(title, r); await putFile(lid, rec); ok.push('“' + title + '”: ' + plural(r.items.length, 'chunk')); }
       } catch (e) {
         var why = e && e.message === 'notext' ? 'this PDF has no selectable text (it looks like a scan). Send the .md version instead.'
           : e && e.message === 'nolib' ? 'the PDF reader did not load. Check your connection and reload the page.'
@@ -542,9 +591,107 @@ if (typeof module !== 'undefined') module.exports = Parser;
     library();
   }
 
+  /* ---------- reader ---------- */
+  function mdInline(t){
+    return esc(t).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>');
+  }
+  function mdCells(ln){
+    var t = ln.trim().replace(/^\|/, '').replace(/\|$/, ''), out = [], cur = '';
+    for (var i = 0; i < t.length; i++) {
+      if (t[i] === '\\' && t[i + 1] === '|') { cur += '|'; i++; } else if (t[i] === '|') { out.push(cur.trim()); cur = ''; } else cur += t[i];
+    }
+    out.push(cur.trim());
+    return out;
+  }
+  function mdToHtml(text){
+    var lines = String(text).replace(/\r/g, '').split('\n'), out = [], i = 0, list = null, m;
+    function close(){ if (list) { out.push('</' + list + '>'); list = null; } }
+    function open(tag){ if (list !== tag) { close(); out.push('<' + tag + '>'); list = tag; } }
+    while (i < lines.length) {
+      var t = lines[i].trim();
+      if (!t) { close(); i++; continue; }
+      if ((m = /^(#{1,6})\s+(.*?)\s*#*$/.exec(t))) { close(); var n = Math.min(m[1].length, 3) + 1; out.push('<h' + n + '>' + mdInline(m[2]) + '</h' + n + '>'); i++; continue; }
+      if (t[0] === '|') {
+        close(); var rows = [];
+        while (i < lines.length && lines[i].trim()[0] === '|') { rows.push(mdCells(lines[i])); i++; }
+        var head = rows.length > 1 && rows[1].every(function(c){ return /^:?-+:?$/.test(c.replace(/\s/g, '')); });
+        var h = '<div class="tw"><table>';
+        rows.forEach(function(r, ri){
+          if (head && ri === 1) return;
+          var tag = head && ri === 0 ? 'th' : 'td';
+          h += '<tr>' + r.map(function(c){ return '<' + tag + '>' + mdInline(c) + '</' + tag + '>'; }).join('') + '</tr>';
+        });
+        out.push(h + '</table></div>'); continue;
+      }
+      if ((m = /^[-*+]\s+(.*)$/.exec(t))) { open('ul'); out.push('<li>' + mdInline(m[1]) + '</li>'); i++; continue; }
+      if ((m = /^\d+[.)]\s+(.*)$/.exec(t))) { open('ol'); out.push('<li>' + mdInline(m[1]) + '</li>'); i++; continue; }
+      close(); out.push('<p>' + mdInline(t) + '</p>'); i++;
+    }
+    close();
+    return out.join('');
+  }
+
+  var onResize = null;
+  window.addEventListener('resize', function(){ if (onResize) onResize(); });
+
+  function reader(id){
+    var lesson = S.lessons.filter(function(l){ return l.id === id; })[0];
+    var title = lesson ? lesson.title : 'Notes';
+    var ZOOMS = [1, 1.5, 2, 3], zi = 0, token = 0, pdfDoc = null, host = null;
+    onResize = null;
+    app.innerHTML = '<div class="bar"><button class="link" data-back>← Back</button></div><h1 class="rt">' + esc(title) + '</h1><p class="rmsg">Opening…</p>';
+    window.scrollTo(0, 0);
+    getFile(id).then(function(rec){
+      if (!rec) { delete have[id]; notice = {kind: 'bad', text: 'This file is no longer stored on this device. Add it again to read it.'}; library(); return; }
+      var practise = '<div class="row"><button class="btn primary" data-open="' + esc(id) + '">Practise this lesson</button></div>';
+      if (rec.type === 'md') {
+        app.innerHTML = '<div class="bar"><button class="link" data-back>← Back</button></div><h1 class="rt">' + esc(title) + '</h1>' +
+          '<div class="doc">' + mdToHtml(rec.text) + '</div>' + practise;
+        return;
+      }
+      app.innerHTML = '<div class="bar"><button class="link" data-back>← Back</button><div class="zoom"><button class="zbtn" id="zout" aria-label="Zoom out">−</button><span class="zl" id="zl">100%</span><button class="zbtn" id="zin" aria-label="Zoom in">+</button></div></div>' +
+        '<h1 class="rt">' + esc(title) + '</h1><p class="hint">Tap + to zoom in, then swipe sideways to move around the page.</p>' +
+        '<div class="pages" id="pages"><p class="rmsg">Drawing the pages…</p></div>' + practise;
+      host = $('#pages');
+      if (!window.pdfjsLib) { host.innerHTML = '<p class="rmsg">The PDF reader did not load. Check your connection and reload the page.</p>'; return; }
+      function setZoom(d){ zi = Math.max(0, Math.min(ZOOMS.length - 1, zi + d)); $('#zl').textContent = Math.round(ZOOMS[zi] * 100) + '%'; $('#zout').disabled = zi === 0; $('#zin').disabled = zi === ZOOMS.length - 1; draw(); }
+      $('#zout').onclick = function(){ setZoom(-1); };
+      $('#zin').onclick = function(){ setZoom(1); };
+      $('#zout').disabled = true;
+      function draw(){
+        if (!pdfDoc) return;
+        var my = ++token, w = Math.floor(host.clientWidth * ZOOMS[zi]), chain = Promise.resolve();
+        host.innerHTML = '';
+        for (var n = 1; n <= pdfDoc.numPages; n++) (function(n){
+          chain = chain.then(function(){
+            if (my !== token) return;
+            return pdfDoc.getPage(n).then(function(page){
+              if (my !== token) return;
+              var vp = page.getViewport({scale: 1}), k = w / vp.width, cssH = vp.height * k;
+              var dpr = Math.min(window.devicePixelRatio || 1, 3), area = (w * dpr) * (cssH * dpr);
+              if (area > 9e6) dpr *= Math.sqrt(9e6 / area);
+              var c = document.createElement('canvas');
+              c.className = 'pg'; c.width = Math.floor(w * dpr); c.height = Math.floor(cssH * dpr);
+              c.style.width = w + 'px'; c.style.height = cssH + 'px';
+              c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Page ' + n + ' of ' + pdfDoc.numPages);
+              host.appendChild(c);
+              return page.render({canvasContext: c.getContext('2d'), viewport: page.getViewport({scale: k * dpr})}).promise;
+            });
+          });
+        })(n);
+        chain.catch(function(){ if (my === token && !host.childNodes.length) host.innerHTML = '<p class="rmsg">Could not draw this PDF. Try the .md version.</p>'; });
+      }
+      pdfjsLib.getDocument({data: new Uint8Array(rec.data.slice(0))}).promise.then(function(doc){
+        pdfDoc = doc; draw();
+        var lastW = host.clientWidth;
+        onResize = function(){ if (!host.isConnected) { onResize = null; return; } if (Math.abs(host.clientWidth - lastW) > 20) { lastW = host.clientWidth; draw(); } };
+      }).catch(function(){ host.innerHTML = '<p class="rmsg">Could not open this PDF. Try the .md version.</p>'; });
+    });
+  }
+
   /* ---------- lesson menu ---------- */
   var MODES = [
-    {id: 'cards', name: 'Flashcards',    min: 1, count: function(d){ return plural(d.items.length + d.rules.length, 'card'); }},
+    {id: 'cards', name: 'Flashcards',    min: 1, count: function(d){ return plural(d.items.length, 'card'); }},
     {id: 'gaps',  name: 'Fill the gaps', min: 1, count: function(d){ return Math.min(10, d.items.length) + ' per round'; }},
     {id: 'quiz',  name: 'Quiz',          min: 2, count: function(d){ return Math.min(10, d.items.length) + ' per round'; }},
     {id: 'match', name: 'Matching',      min: 3, count: function(d){ return plural(Math.min(12, d.items.length), 'pair'); }}
@@ -554,10 +701,11 @@ if (typeof module !== 'undefined') module.exports = Parser;
     var last = S.last[deck.id] || {};
     app.innerHTML =
       '<button class="link" data-lib>← All lessons</button>' +
-      '<header><p class="eyebrow"><span>' + plural(deck.items.length, 'chunk') + (deck.rules.length ? ' · ' + plural(deck.rules.length, 'grammar note') : '') + '</span></p>' +
+      '<header><p class="eyebrow"><span>' + plural(deck.items.length, 'chunk') + '</span></p>' +
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
+      (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">Read the notes first</button></div>' : '') +
       '<div class="tiles">' + MODES.map(function(m){
-        var n = m.id === 'cards' ? deck.items.length + deck.rules.length : deck.items.length, off = n < m.min;
+        var n = deck.items.length, off = n < m.min;
         return '<button class="tile" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + m.name + '</span><span class="tc">' + (off ? 'Needs more chunks' : m.count(deck)) + '</span>' +
           '<span class="tl">' + (last[m.id] ? 'Last: ' + esc(last[m.id]) : 'Not tried yet') + '</span></button>';
       }).join('') + '</div>';
@@ -578,8 +726,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
 
   /* ---------- Flashcards ---------- */
   function flash(deck){
-    var cards = deck.items.map(function(it){ return {front: it.a, back: it.b, kind: 'chunk'}; })
-      .concat(deck.rules.map(function(r){ return {front: r.h, back: r.t, kind: 'rule'}; }));
+    var cards = deck.items.map(function(it){ return {front: it.a, back: it.b}; });
     var total = cards.length, q = shuffle(cards.map(function(_, i){ return i; }));
     var known = 0, rev = false, flipped = false, again = {}, againN = 0;
     function draw(){
@@ -587,12 +734,12 @@ if (typeof module !== 'undefined') module.exports = Parser;
         var first = total - againN;
         return finish('cards', {big: first + ' / ' + total, sub: 'cards known on the first try', pct: first / total * 100, last: first + '/' + total, again: function(){ flash(deck); }});
       }
-      var c = cards[q[0]], swap = rev && c.kind !== 'rule';
-      var front = swap ? c.back : c.front, back = swap ? c.front : c.back;
-      var lblQ = c.kind === 'rule' ? 'Grammar' : 'Question', lblA = c.kind === 'rule' ? 'Rule' : 'Answer';
+      var c = cards[q[0]];
+      var front = rev ? c.back : c.front, back = rev ? c.front : c.back;
+      var lblQ = 'Question', lblA = 'Answer';
       app.innerHTML = top(known, total, known + ' / ' + total + ' known') +
         '<button class="flash" id="flip" aria-label="' + (flipped ? lblA : lblQ) + '. Press to flip the card."><span class="side">' + (flipped ? lblA : lblQ) + '</span>' +
-        '<span class="face ' + (flipped ? 'back' : '') + (flipped && c.kind === 'rule' ? ' rule' : '') + '">' + esc(flipped ? back : front) + '</span></button>' +
+        '<span class="face ' + (flipped ? 'back' : '') + '">' + esc(flipped ? back : front) + '</span></button>' +
         (flipped ? '<div class="row"><button class="btn ghost" id="again">Again</button><button class="btn primary" id="got">Got it</button></div>' : '<p class="hint">Tap the card to flip it.</p>') +
         '<button class="link small" id="swap">' + (rev ? 'Show the question side first' : 'Show the answer side first') + '</button>';
       $('#flip').onclick = function(){ flipped = !flipped; draw(); if (flipped && $('#got')) $('#got').focus(); };
@@ -727,10 +874,9 @@ if (typeof module !== 'undefined') module.exports = Parser;
     window.scrollTo(0, 0);
   }
 
-  library();
+  loadKeys().then(function(){ library(); checkShared(); }, function(){ library(); checkShared(); });
   if (IS_PWA && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
   if (IS_PWA && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){});
-  checkShared();
 })();
 </script>
 </body>
