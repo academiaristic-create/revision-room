@@ -172,6 +172,8 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 .spk{position:absolute;top:10px;right:10px;width:46px;height:46px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--accent);cursor:pointer}
 .spk:hover{border-color:var(--accent)}
 .links{display:flex;gap:0 22px;flex-wrap:wrap}
+.vpick{display:flex;align-items:center;gap:10px;margin-top:12px}
+.vpick select{flex:1;min-width:0;min-height:42px;padding:0 10px;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px}
 .voice{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-top:18px}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .segb{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:500;cursor:pointer}
@@ -396,7 +398,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
   var LIB_KEY = 'revision-room:library:v1';
   var S = {lessons: [], last: {}};
   var IS_PWA = true;
-  var VERSION_LABEL = '6, 16 Oct';
+  var VERSION_LABEL = '7, 16 Oct';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
   try {
@@ -441,7 +443,23 @@ if (typeof module !== 'undefined') module.exports = Parser;
   var SLOW = false;
   try { SLOW = localStorage.getItem('revision-room:slow') === '1'; } catch (e) {}
   function allVoices(){ try { return speechSynthesis.getVoices() || []; } catch (e) { return []; } }
+  var CHOSEN = {};
+  try { CHOSEN = JSON.parse(localStorage.getItem('revision-room:voices') || '{}') || {}; } catch (e) { CHOSEN = {}; }
+  function voiceList(lg){
+    var vs = allVoices().filter(function(v){ return String(v.lang || '').replace('_', '-').toLowerCase().slice(0, 2) === lg; });
+    var rank = function(v){ return /natural|neural|premium|enhanced/i.test(v.name) ? 0 : /google|siri/i.test(v.name) ? 1 : 2; };
+    return vs.sort(function(a, b){ return rank(a) - rank(b) || a.name.localeCompare(b.name); });
+  }
+  function voiceSelect(lg){
+    if (!SPEECH || !LOCALES[lg]) return '';
+    var vs = voiceList(lg);
+    if (!vs.length) return '<p class="hint" id="vhint">No ' + LANG_NAME[lg] + ' voice found on this device. Install one in your phone or browser settings.</p>';
+    return '<div class="vpick"><label for="vsel" class="label" style="margin:0">Voice</label><select id="vsel">' +
+      '<option value="">Automatic</option>' + vs.map(function(v){ return '<option value="' + esc(v.name) + '"' + (CHOSEN[lg] === v.name ? ' selected' : '') + '>' + esc(v.name) + '</option>'; }).join('') + '</select></div>' +
+      '<p class="hint">Sounds robotic? Install a better ' + LANG_NAME[lg] + ' voice (free) in your device settings: on iPhone, Accessibility > Spoken Content > Voices, then download an Enhanced one. On Android, install Google text-to-speech voice data. On a laptop, Microsoft Edge has the best free voices.</p>';
+  }
   function pickVoice(lg){
+    if (CHOSEN[lg]) { var c = allVoices().filter(function(v){ return v.name === CHOSEN[lg]; })[0]; if (c) return c; }
     var vs = allVoices(), prefs = LOCALES[lg] || [];
     for (var i = 0; i < prefs.length; i++) {
       var p = prefs[i].toLowerCase();
@@ -818,15 +836,26 @@ if (typeof module !== 'undefined') module.exports = Parser;
       '<header><p class="eyebrow"><span>' + plural(deck.items.length, 'chunk') + '</span></p>' +
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
       (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">Read the notes first</button></div>' : '') +
-      (SPEECH && deck.id !== '*' ? '<div class="voice"><span class="label" style="margin:0">Voice</span><div class="seg" role="group" aria-label="Voice language">' +
-        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['off', 'Off']].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' : '') +
+      (SPEECH && deck.id !== '*' ? '<div class="voice"><span class="label" style="margin:0">Speak in</span><div class="seg" role="group" aria-label="Voice language">' +
+        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['off', 'Off']].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
       '<div class="tiles">' + MODES.map(function(m){
         var n = deck.items.length, off = n < m.min;
         return '<button class="tile" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + m.name + '</span><span class="tc">' + (off ? 'Needs more chunks' : m.count(deck)) + '</span>' +
           '<span class="tl">' + (last[m.id] ? 'Last: ' + esc(last[m.id]) : 'Not tried yet') + '</span></button>';
       }).join('') + '</div>';
     window.scrollTo(0, 0);
+    bindVoiceSelect(deck);
   }
+  function bindVoiceSelect(deck){
+    var sel = document.getElementById('vsel'); if (!sel || !deck.lang) return;
+    sel.onchange = function(){
+      if (sel.value) CHOSEN[deck.lang] = sel.value; else delete CHOSEN[deck.lang];
+      try { localStorage.setItem('revision-room:voices', JSON.stringify(CHOSEN)); } catch (e) {}
+      var l = S.lessons.filter(function(x){ return x.id === deck.id; })[0];
+      if (l && l.items.length) speak(l.items[0].a, deck.lang);
+    };
+  }
+  if (SPEECH) { try { speechSynthesis.addEventListener('voiceschanged', function(){ var b = document.getElementById('vbox'); if (b && cur && cur.lang && cur.lang !== 'off') { b.innerHTML = voiceSelect(cur.lang); bindVoiceSelect(cur); } }); } catch (e) {} }
   function run(id){ if (id === 'cards') flash(cur); else if (id === 'gaps') gaps(cur); else if (id === 'quiz') quiz(cur); else if (id === 'match') match(cur); }
 
   function finish(id, o){

@@ -1,5 +1,5 @@
 /* Revision Room service worker: offline copy of the app, plus the Android "Share to app" receiver. */
-const VERSION = 'rr-v6';
+const VERSION = 'rr-v7';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'pdf.min.js', 'pdf.worker.min.js', 'config.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 const KEEP = [VERSION, 'rr-shared', 'rr-fonts'];
