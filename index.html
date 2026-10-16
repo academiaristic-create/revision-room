@@ -210,8 +210,8 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 <script>
 /* Lesson-notes parser and exercise builders. Pure functions, no DOM. */
 var Parser = (function () {
-  var HEADER = /^(english|spanish|serbian|russian|german|french|italian|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
-  var VOCAB = /vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabular|rečnik|izraz/i;
+  var HEADER = /^(english|spanish|serbian|russian|german|french|italian|deutsch|german|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
+  var VOCAB = /vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabel|vokabular|wortschatz|redewendung|wendung|ausdr[uü]ck|rečnik|izraz/i;
   var STOP = new Set('a an the to of in on at for with and or but is are was were be been being am do does did have has had will would can could should may might must shall not no it its this that these those you your he she we they them his her our their my me one ones some any about up out off over into from by as if than then so too very just also more most much many get got go goes going made make sth smth smb sb someone something somebody'.split(' '));
 
   function clean(s) {
@@ -398,7 +398,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
   var LIB_KEY = 'revision-room:library:v1';
   var S = {lessons: [], last: {}};
   var IS_PWA = true;
-  var VERSION_LABEL = '8, 16 Oct';
+  var VERSION_LABEL = '9, 16 Oct';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
@@ -439,8 +439,8 @@ if (typeof module !== 'undefined') module.exports = Parser;
 
   /* ---------- voices: the phone's own text-to-speech ---------- */
   var SPEECH = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
-  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru']};
-  var LANG_NAME = {en: 'English', es: 'Spanish', ru: 'Russian'};
+  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru'], de: ['de-DE', 'de-AT', 'de-CH', 'de']};
+  var LANG_NAME = {en: 'English', es: 'Spanish', ru: 'Russian', de: 'German'};
   var SLOW = false;
   try { SLOW = localStorage.getItem('revision-room:slow') === '1'; } catch (e) {}
   function allVoices(){ try { return speechSynthesis.getVoices() || []; } catch (e) { return []; } }
@@ -573,7 +573,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
     return l ? {id: l.id, title: l.title, items: withLang(l), lang: lessonLang(l)} : null;
   }
   function addLang(){ return LOCALES[S.addLang] ? S.addLang : 'en'; }
-  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский'};
+  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский', de: 'Deutsch'};
   function setLang(lg){
     var l = cur && S.lessons.filter(function(x){ return x.id === cur.id; })[0];
     if (!l || (lg !== 'off' && !LOCALES[lg])) return;
@@ -630,7 +630,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
       '<header><p class="eyebrow"><span>Revision Room</span></p><h1><span class="hl">Your lessons</span></h1>' +
       '<p class="sub">Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.</p></header>' +
       '<div class="pick"><span class="label" style="margin:0">Language of the notes</span><div class="seg" role="group" aria-label="Language of the notes">' +
-        ['en', 'es', 'ru'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
+        ['en', 'es', 'ru', 'de'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
         '</div><p class="hint">The language of the left column, the one you want to learn. It sets the voice. Pick it before you add a file.</p></div>' +
       '<label class="drop" id="drop" for="file"><span class="dt">Add lesson notes</span><span class="dd">Choose PDF or .md files, or drop them here</span></label>' +
       '<input class="vh" type="file" id="file" multiple accept=".pdf,.md,.markdown,.txt,application/pdf,text/markdown,text/plain">' +
@@ -838,7 +838,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
       (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">Read the notes first</button></div>' : '') +
       (SPEECH && deck.id !== '*' ? '<div class="voice"><span class="label" style="margin:0">Speak in</span><div class="seg" role="group" aria-label="Voice language">' +
-        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['off', 'Off']].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
+        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['off', 'Off']].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
       '<div class="tiles">' + MODES.map(function(m){
         var n = deck.items.length, off = n < m.min;
         return '<button class="tile" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + m.name + '</span><span class="tc">' + (off ? 'Needs more chunks' : m.count(deck)) + '</span>' +
