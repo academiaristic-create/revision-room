@@ -100,7 +100,7 @@ h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:7
 .tile:hover:not(:disabled){border-color:var(--accent)}
 .tile:active:not(:disabled){transform:scale(.985)}
 .tile:disabled{opacity:.5;cursor:default}
-.tn{font:700 21px/1.15 var(--display);letter-spacing:-.01em}
+.tn{font:700 21px/1.15 var(--display);letter-spacing:-.01em;overflow-wrap:anywhere}
 .tc{color:var(--muted);font-size:14px}
 .tl{margin-top:auto;padding-top:14px;font-size:13px;font-weight:600;color:var(--accent)}
 
@@ -360,7 +360,7 @@ var Parser = (function () {
   /* ---------- Exercise builders ---------- */
   function makeGap(item) {
     var a = item.a.replace(/\|/g, '/').replace(/[{}]/g, '');
-    var hint = 'Meaning: ' + item.b;
+    var hint = Parser.t ? Parser.t('gap_hint', {x: item.b}) : 'Meaning: ' + item.b;
     var words = a.split(/\s+/), cand = [];
     words.forEach(function (w, i) {
       var core = w.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
@@ -377,7 +377,7 @@ var Parser = (function () {
     var out = [];
     sample(items, n).forEach(function (it) {
       var dir = Math.random() < 0.5, key = dir ? 'b' : 'a';
-      var q = dir ? 'What does “' + it.a + '” mean?' : 'Which phrase means “' + it.b + '”?';
+      var q = Parser.t ? (dir ? Parser.t('q_mean', {a: it.a}) : Parser.t('q_which', {b: it.b})) : (dir ? 'What does “' + it.a + '” mean?' : 'Which phrase means “' + it.b + '”?');
       var seen = {}; seen[it[key].toLowerCase()] = 1;
       var d = [];
       shuffle(items).forEach(function (o) { var v = o[key], k = v.toLowerCase(); if (d.length < 3 && o !== it && !seen[k]) { seen[k] = 1; d.push(v); } });
@@ -393,12 +393,302 @@ if (typeof module !== 'undefined') module.exports = Parser;
 
 </script>
 <script>
+/* Interface text in five languages. Keys are the same everywhere; English is the fallback. Plurals are objects keyed by Intl.PluralRules category. */
+var I18N = {
+  en: {
+    ui_name: 'English',
+    your_lessons: 'Your lessons',
+    sub: 'Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.',
+    notes_lang: 'Language of the notes',
+    notes_lang_hint: 'The language of the left column, the one you want to learn. It sets the voice. Pick it before you add a file.',
+    drop_t: 'Add lesson notes', drop_d: 'Choose PDF or .md files, or drop them here',
+    nosave: 'This browser is not letting the page save anything, so your lessons will be gone when you close the tab.',
+    lessons: 'Lessons', mixed: 'All lessons mixed', mixed_sub: '{c} from {n} {w}',
+    added: 'added {d}', read: 'Read', practise: 'Practise', remove: 'Remove', remove_again: 'Tap again to remove',
+    how_h: 'What the notes should look like',
+    how_p: 'The exercises come from the table under “Vocabulary & chunks”: the phrase on the left and its meaning on the right. The whole file stays in the app, so you can read the theory first with the Read button.',
+    sample_btn: 'Try a sample lesson', sample_added: 'Added “Sample lesson”. Remove it any time.',
+    foot: 'Lessons are stored on this device only, so a phone and a laptop each keep their own list. App version {v}.',
+    feedback_btn: 'Send feedback', app_lang: 'App language',
+    install: 'Install as an app', install_ios: 'To install: tap the Share button, then Add to Home Screen.',
+    reading: 'Reading {f}…', added_list: 'Added {x}.',
+    err_table: 'no phrase table found. The notes need a table with the phrase on the left and its meaning on the right.',
+    err_notext: 'this PDF has no selectable text (it looks like a scan). Send the .md version instead.',
+    err_nolib: 'the PDF reader did not load. Check your connection and reload the page.',
+    err_read: 'could not read this file. Try the .md version.',
+    back: '← Back', all_lessons: '← All lessons',
+    notes: 'Notes', opening: 'Opening…', file_gone: 'This file is no longer stored on this device. Add it again to read it.',
+    practise_this: 'Practise this lesson', zoom_out: 'Zoom out', zoom_in: 'Zoom in',
+    zoom_hint: 'Tap + to zoom in, then swipe sideways to move around the page.', drawing: 'Drawing the pages…',
+    page_of: 'Page {n} of {m}', err_draw: 'Could not draw this PDF. Try the .md version.', err_open: 'Could not open this PDF. Try the .md version.',
+    read_first: 'Read the notes first', speak_in: 'Speak in', voice_lang: 'Voice language', off: 'Off',
+    voice: 'Voice', automatic: 'Automatic',
+    no_voice_found: 'No {l} voice found on this device. Install one in your phone or browser settings.',
+    voice_tip: 'Sounds robotic? Install a better {l} voice (free) in your device settings: on iPhone, Accessibility > Spoken Content > Voices, then download an Enhanced one. On Android, install Google text-to-speech voice data. On a laptop, Microsoft Edge has the best free voices.',
+    no_voice_card: 'This device has no {l} voice installed, so there is no sound for this lesson.',
+    needs_more: 'Needs more chunks', last: 'Last: {x}', not_tried: 'Not tried yet', per_round: '{n} per round',
+    m_cards: 'Flashcards', m_gaps: 'Fill the gaps', m_quiz: 'Quiz', m_match: 'Matching',
+    finished: 'Finished', r_clean: 'Clean run.', r_solid: 'Solid. A few to revisit.', r_more: 'Worth another pass.',
+    retry: 'Practise the mistakes', again_go: 'Go again', back_lesson: 'Back to lesson',
+    question: 'Question', answer: 'Answer', flip_aria: '{s}. Press to flip the card.', hear: 'Hear the phrase',
+    again: 'Again', got: 'Got it', tap_flip: 'Tap the card to flip it.',
+    show_q: 'Show the question side first', show_a: 'Show the answer side first',
+    slow_on: 'Slow voice: on', slow_off: 'Slow voice: off', known: '{k} / {n} known', cards_known: 'cards known on the first try',
+    sentences_ok: 'sentences correct', blank: 'Blank {k}', type_phrase: 'Type the phrase', fill_gap: 'Fill in the gap',
+    check: 'Check', correct: 'Correct.', not_quite: 'Not quite.', answer_green: 'The right answer is in green.',
+    see_results: 'See results', next: 'Next', gap_hint: 'Meaning: {x}',
+    questions_ok: 'questions correct', q_mean: 'What does “{a}” mean?', q_which: 'Which phrase means “{b}”?',
+    no_slips: 'No slips', pairs_matched: '{n} pairs matched', round_of: 'Round {r} of {m} · {s}',
+    match_help: 'Tap one on the left, then its partner on the right',
+    fb_title: 'Feedback', fb_sub: 'Something confusing, broken or missing? Tell me and I will read it.',
+    fb_msg: 'Your message', fb_name: 'Your name (optional)', fb_email: 'Your email, if you want a reply (optional)', fb_trap: 'Leave empty',
+    fb_send: 'Send', fb_empty: 'Write a message first.', fb_thanks: 'Thank you, sent.', fb_sending: 'Sending…',
+    fb_fail: 'Could not send', fb_retry: ' Your text is still here, try again.', fb_net: 'No connection. Your text is still here, try again when you are online.',
+    l_en: 'English', l_es: 'Spanish', l_ru: 'Russian', l_de: 'German',
+    'pl.chunk': {one: 'chunk', other: 'chunks'}, 'pl.card': {one: 'card', other: 'cards'}, 'pl.pair': {one: 'pair', other: 'pairs'},
+    'pl.slip': {one: 'slip', other: 'slips'}, 'pl.lesson': {one: 'lesson', other: 'lessons'}
+  },
+  ru: {
+    ui_name: 'Русский',
+    your_lessons: 'Ваши уроки',
+    sub: 'Добавляйте заметки с каждого урока (PDF или Markdown). Фразы и лексика из них превращаются в карточки, упражнения с пропусками, тест и сопоставление.',
+    notes_lang: 'Язык заметок',
+    notes_lang_hint: 'Язык левого столбца, того, который вы учите. От него зависит озвучка. Выберите его до добавления файла.',
+    drop_t: 'Добавить заметки урока', drop_d: 'Выберите PDF или .md файлы или перетащите их сюда',
+    nosave: 'Этот браузер не даёт странице ничего сохранять, поэтому уроки пропадут после закрытия вкладки.',
+    lessons: 'Уроки', mixed: 'Все уроки вместе', mixed_sub: '{c} из {n} {w}',
+    added: 'добавлено {d}', read: 'Читать', practise: 'Учить', remove: 'Удалить', remove_again: 'Нажмите ещё раз, чтобы удалить',
+    how_h: 'Как должны выглядеть заметки',
+    how_p: 'Упражнения строятся по таблице под заголовком «Vocabulary & chunks»: фраза слева, перевод справа. Весь файл остаётся в приложении, поэтому сначала можно прочитать теорию кнопкой «Читать».',
+    sample_btn: 'Попробовать пример урока', sample_added: 'Добавлен «Sample lesson». Его можно удалить в любой момент.',
+    foot: 'Уроки хранятся только на этом устройстве: на телефоне и на ноутбуке списки свои. Версия приложения {v}.',
+    feedback_btn: 'Написать отзыв', app_lang: 'Язык приложения',
+    install: 'Установить как приложение', install_ios: 'Чтобы установить: нажмите «Поделиться», затем «На экран Домой».',
+    reading: 'Читаю {f}…', added_list: 'Добавлено: {x}.',
+    err_table: 'таблица с фразами не найдена. Нужна таблица: фраза слева, перевод справа.',
+    err_notext: 'в этом PDF нет выделяемого текста (похоже на скан). Пришлите версию .md.',
+    err_nolib: 'не загрузилась программа чтения PDF. Проверьте интернет и обновите страницу.',
+    err_read: 'не удалось прочитать файл. Попробуйте версию .md.',
+    back: '← Назад', all_lessons: '← Все уроки',
+    notes: 'Заметки', opening: 'Открываю…', file_gone: 'Этого файла больше нет на устройстве. Добавьте его снова, чтобы прочитать.',
+    practise_this: 'Учить этот урок', zoom_out: 'Уменьшить', zoom_in: 'Увеличить',
+    zoom_hint: 'Нажмите +, чтобы увеличить, и проводите пальцем в стороны, чтобы двигаться по странице.', drawing: 'Рисую страницы…',
+    page_of: 'Страница {n} из {m}', err_draw: 'Не удалось показать PDF. Попробуйте версию .md.', err_open: 'Не удалось открыть PDF. Попробуйте версию .md.',
+    read_first: 'Сначала прочитать заметки', speak_in: 'Озвучка', voice_lang: 'Язык озвучки', off: 'Выкл.',
+    voice: 'Голос', automatic: 'Автоматически',
+    no_voice_found: 'На этом устройстве нет голоса для языка: {l}. Установите его в настройках телефона или браузера.',
+    voice_tip: 'Голос звучит как робот? Установите голос получше (бесплатно) в настройках устройства. На iPhone: Универсальный доступ > Речь > Голоса, и скачайте вариант Enhanced. На Android установите голосовые данные Google. На ноутбуке лучшие бесплатные голоса в Microsoft Edge.',
+    no_voice_card: 'На этом устройстве не установлен голос для языка: {l}, поэтому звука в этом уроке не будет.',
+    needs_more: 'Нужно больше фраз', last: 'Последний: {x}', not_tried: 'Ещё не пробовали', per_round: '{n} за раунд',
+    m_cards: 'Карточки', m_gaps: 'Пропуски', m_quiz: 'Тест', m_match: 'Сопоставление',
+    finished: 'Готово', r_clean: 'Без ошибок.', r_solid: 'Хорошо. Несколько стоит повторить.', r_more: 'Стоит пройти ещё раз.',
+    retry: 'Повторить ошибки', again_go: 'Ещё раз', back_lesson: 'К уроку',
+    question: 'Вопрос', answer: 'Ответ', flip_aria: '{s}. Нажмите, чтобы перевернуть карточку.', hear: 'Прослушать фразу',
+    again: 'Ещё раз', got: 'Знаю', tap_flip: 'Нажмите на карточку, чтобы перевернуть её.',
+    show_q: 'Сначала показывать вопрос', show_a: 'Сначала показывать ответ',
+    slow_on: 'Медленный голос: вкл.', slow_off: 'Медленный голос: выкл.', known: 'Знаю: {k} / {n}', cards_known: 'карточек с первого раза',
+    sentences_ok: 'предложений верно', blank: 'Пропуск {k}', type_phrase: 'Введите фразу', fill_gap: 'Вставьте пропущенное',
+    check: 'Проверить', correct: 'Верно.', not_quite: 'Не совсем.', answer_green: 'Правильный ответ показан зелёным.',
+    see_results: 'Результаты', next: 'Дальше', gap_hint: 'Значение: {x}',
+    questions_ok: 'вопросов верно', q_mean: 'Что значит «{a}»?', q_which: 'Какая фраза значит «{b}»?',
+    no_slips: 'Без ошибок', pairs_matched: 'Пар найдено: {n}', round_of: 'Раунд {r} из {m} · {s}',
+    match_help: 'Нажмите на фразу слева, затем на её пару справа',
+    fb_title: 'Отзыв', fb_sub: 'Что-то непонятно, не работает или не хватает? Напишите, я прочитаю.',
+    fb_msg: 'Ваше сообщение', fb_name: 'Ваше имя (необязательно)', fb_email: 'Ваша почта, если нужен ответ (необязательно)', fb_trap: 'Оставьте пустым',
+    fb_send: 'Отправить', fb_empty: 'Сначала напишите сообщение.', fb_thanks: 'Спасибо, отправлено.', fb_sending: 'Отправляю…',
+    fb_fail: 'Не удалось отправить', fb_retry: ' Текст сохранён, попробуйте ещё раз.', fb_net: 'Нет соединения. Текст сохранён, попробуйте, когда будет интернет.',
+    l_en: 'английский', l_es: 'испанский', l_ru: 'русский', l_de: 'немецкий',
+    'pl.chunk': {one: 'фраза', few: 'фразы', many: 'фраз', other: 'фразы'}, 'pl.card': {one: 'карточка', few: 'карточки', many: 'карточек', other: 'карточки'},
+    'pl.pair': {one: 'пара', few: 'пары', many: 'пар', other: 'пары'}, 'pl.slip': {one: 'ошибка', few: 'ошибки', many: 'ошибок', other: 'ошибки'},
+    'pl.lesson': {one: 'урока', few: 'уроков', many: 'уроков', other: 'уроков'}
+  },
+  es: {
+    ui_name: 'Español',
+    your_lessons: 'Tus lecciones',
+    sub: 'Añade los apuntes de cada clase (PDF o Markdown). Las expresiones y el vocabulario se convierten en tarjetas, huecos por rellenar, un test y emparejar.',
+    notes_lang: 'Idioma de los apuntes',
+    notes_lang_hint: 'El idioma de la columna izquierda, el que quieres aprender. Define la voz. Elígelo antes de añadir un archivo.',
+    drop_t: 'Añadir apuntes de clase', drop_d: 'Elige archivos PDF o .md, o suéltalos aquí',
+    nosave: 'Este navegador no deja que la página guarde nada, así que tus lecciones se perderán al cerrar la pestaña.',
+    lessons: 'Lecciones', mixed: 'Todas las lecciones juntas', mixed_sub: '{c} de {n} {w}',
+    added: 'añadida el {d}', read: 'Leer', practise: 'Practicar', remove: 'Quitar', remove_again: 'Toca otra vez para quitar',
+    how_h: 'Cómo deben ser los apuntes',
+    how_p: 'Los ejercicios salen de la tabla bajo «Vocabulary & chunks»: la frase a la izquierda y su significado a la derecha. El archivo completo se queda en la app, así que puedes leer antes la teoría con el botón Leer.',
+    sample_btn: 'Probar una lección de ejemplo', sample_added: 'Añadida «Sample lesson». Puedes quitarla cuando quieras.',
+    foot: 'Las lecciones se guardan solo en este dispositivo, así que el móvil y el portátil tienen cada uno su lista. Versión de la app {v}.',
+    feedback_btn: 'Enviar comentarios', app_lang: 'Idioma de la app',
+    install: 'Instalar como app', install_ios: 'Para instalar: toca el botón Compartir y luego Añadir a pantalla de inicio.',
+    reading: 'Leyendo {f}…', added_list: 'Añadido: {x}.',
+    err_table: 'no se encontró ninguna tabla de frases. Los apuntes necesitan una tabla con la frase a la izquierda y su significado a la derecha.',
+    err_notext: 'este PDF no tiene texto seleccionable (parece un escaneo). Envía la versión .md.',
+    err_nolib: 'el lector de PDF no se cargó. Comprueba tu conexión y recarga la página.',
+    err_read: 'no se pudo leer este archivo. Prueba la versión .md.',
+    back: '← Atrás', all_lessons: '← Todas las lecciones',
+    notes: 'Apuntes', opening: 'Abriendo…', file_gone: 'Este archivo ya no está guardado en este dispositivo. Añádelo de nuevo para leerlo.',
+    practise_this: 'Practicar esta lección', zoom_out: 'Alejar', zoom_in: 'Acercar',
+    zoom_hint: 'Toca + para acercar y desliza hacia los lados para moverte por la página.', drawing: 'Dibujando las páginas…',
+    page_of: 'Página {n} de {m}', err_draw: 'No se pudo mostrar este PDF. Prueba la versión .md.', err_open: 'No se pudo abrir este PDF. Prueba la versión .md.',
+    read_first: 'Leer primero los apuntes', speak_in: 'Hablar en', voice_lang: 'Idioma de la voz', off: 'Sin voz',
+    voice: 'Voz', automatic: 'Automática',
+    no_voice_found: 'No hay voz de {l} en este dispositivo. Instala una en los ajustes del móvil o del navegador.',
+    voice_tip: '¿Suena robótica? Instala una voz mejor de {l} (gratis) en los ajustes del dispositivo: en iPhone, Accesibilidad > Contenido hablado > Voces, y descarga una Mejorada. En Android, instala los datos de voz de Google. En ordenador, Microsoft Edge tiene las mejores voces gratis.',
+    no_voice_card: 'Este dispositivo no tiene instalada una voz de {l}, así que esta lección no tendrá sonido.',
+    needs_more: 'Faltan expresiones', last: 'Último: {x}', not_tried: 'Sin probar', per_round: '{n} por ronda',
+    m_cards: 'Tarjetas', m_gaps: 'Rellenar huecos', m_quiz: 'Test', m_match: 'Emparejar',
+    finished: 'Terminado', r_clean: 'Sin fallos.', r_solid: 'Bien. Conviene repasar algunas.', r_more: 'Merece otra vuelta.',
+    retry: 'Practicar los fallos', again_go: 'Otra vez', back_lesson: 'Volver a la lección',
+    question: 'Pregunta', answer: 'Respuesta', flip_aria: '{s}. Pulsa para dar la vuelta a la tarjeta.', hear: 'Escuchar la frase',
+    again: 'Otra vez', got: 'Me la sé', tap_flip: 'Toca la tarjeta para darle la vuelta.',
+    show_q: 'Mostrar primero la pregunta', show_a: 'Mostrar primero la respuesta',
+    slow_on: 'Voz lenta: sí', slow_off: 'Voz lenta: no', known: '{k} / {n} sabidas', cards_known: 'tarjetas sabidas a la primera',
+    sentences_ok: 'frases correctas', blank: 'Hueco {k}', type_phrase: 'Escribe la frase', fill_gap: 'Rellena el hueco',
+    check: 'Comprobar', correct: 'Correcto.', not_quite: 'Casi.', answer_green: 'La respuesta correcta está en verde.',
+    see_results: 'Ver resultados', next: 'Siguiente', gap_hint: 'Significado: {x}',
+    questions_ok: 'preguntas correctas', q_mean: '¿Qué significa «{a}»?', q_which: '¿Qué frase significa «{b}»?',
+    no_slips: 'Sin fallos', pairs_matched: '{n} parejas emparejadas', round_of: 'Ronda {r} de {m} · {s}',
+    match_help: 'Toca una a la izquierda y luego su pareja a la derecha',
+    fb_title: 'Comentarios', fb_sub: '¿Algo confuso, roto o que falta? Cuéntamelo y lo leeré.',
+    fb_msg: 'Tu mensaje', fb_name: 'Tu nombre (opcional)', fb_email: 'Tu correo, si quieres respuesta (opcional)', fb_trap: 'Déjalo vacío',
+    fb_send: 'Enviar', fb_empty: 'Escribe primero un mensaje.', fb_thanks: 'Gracias, enviado.', fb_sending: 'Enviando…',
+    fb_fail: 'No se pudo enviar', fb_retry: ' Tu texto sigue aquí, inténtalo de nuevo.', fb_net: 'Sin conexión. Tu texto sigue aquí, inténtalo cuando tengas internet.',
+    l_en: 'inglés', l_es: 'español', l_ru: 'ruso', l_de: 'alemán',
+    'pl.chunk': {one: 'expresión', other: 'expresiones'}, 'pl.card': {one: 'tarjeta', other: 'tarjetas'}, 'pl.pair': {one: 'pareja', other: 'parejas'},
+    'pl.slip': {one: 'fallo', other: 'fallos'}, 'pl.lesson': {one: 'lección', other: 'lecciones'}
+  },
+  de: {
+    ui_name: 'Deutsch',
+    your_lessons: 'Deine Lektionen',
+    sub: 'Füge die Notizen jeder Stunde hinzu (PDF oder Markdown). Aus den Wendungen und dem Wortschatz werden Karteikarten, Lückentexte, ein Quiz und Zuordnen.',
+    notes_lang: 'Sprache der Notizen',
+    notes_lang_hint: 'Die Sprache der linken Spalte, also die, die du lernst. Sie bestimmt die Stimme. Wähle sie, bevor du eine Datei hinzufügst.',
+    drop_t: 'Stundennotizen hinzufügen', drop_d: 'PDF- oder .md-Dateien auswählen oder hierher ziehen',
+    nosave: 'Dieser Browser erlaubt der Seite kein Speichern, deine Lektionen sind also weg, sobald du den Tab schließt.',
+    lessons: 'Lektionen', mixed: 'Alle Lektionen gemischt', mixed_sub: '{c} aus {n} {w}',
+    added: 'hinzugefügt am {d}', read: 'Lesen', practise: 'Üben', remove: 'Entfernen', remove_again: 'Nochmal tippen zum Entfernen',
+    how_h: 'So sollten die Notizen aussehen',
+    how_p: 'Die Übungen entstehen aus der Tabelle unter „Vocabulary & chunks“: links die Wendung, rechts die Bedeutung. Die ganze Datei bleibt in der App, du kannst also mit dem Knopf Lesen zuerst die Theorie lesen.',
+    sample_btn: 'Beispiellektion ausprobieren', sample_added: '„Sample lesson“ hinzugefügt. Du kannst sie jederzeit entfernen.',
+    foot: 'Lektionen werden nur auf diesem Gerät gespeichert, Handy und Laptop haben also jeweils ihre eigene Liste. App-Version {v}.',
+    feedback_btn: 'Feedback senden', app_lang: 'App-Sprache',
+    install: 'Als App installieren', install_ios: 'Zum Installieren: Teilen-Knopf antippen, dann „Zum Home-Bildschirm“.',
+    reading: 'Lese {f}…', added_list: 'Hinzugefügt: {x}.',
+    err_table: 'keine Tabelle mit Wendungen gefunden. Die Notizen brauchen eine Tabelle mit der Wendung links und der Bedeutung rechts.',
+    err_notext: 'dieses PDF enthält keinen markierbaren Text (es sieht nach einem Scan aus). Schick stattdessen die .md-Version.',
+    err_nolib: 'der PDF-Leser wurde nicht geladen. Prüfe deine Verbindung und lade die Seite neu.',
+    err_read: 'diese Datei konnte nicht gelesen werden. Versuch die .md-Version.',
+    back: '← Zurück', all_lessons: '← Alle Lektionen',
+    notes: 'Notizen', opening: 'Öffne…', file_gone: 'Diese Datei ist nicht mehr auf diesem Gerät gespeichert. Füge sie erneut hinzu, um sie zu lesen.',
+    practise_this: 'Diese Lektion üben', zoom_out: 'Verkleinern', zoom_in: 'Vergrößern',
+    zoom_hint: 'Tippe auf +, um zu vergrößern, und wische zur Seite, um dich auf der Seite zu bewegen.', drawing: 'Zeichne die Seiten…',
+    page_of: 'Seite {n} von {m}', err_draw: 'Dieses PDF konnte nicht angezeigt werden. Versuch die .md-Version.', err_open: 'Dieses PDF konnte nicht geöffnet werden. Versuch die .md-Version.',
+    read_first: 'Zuerst die Notizen lesen', speak_in: 'Sprechen in', voice_lang: 'Sprache der Stimme', off: 'Aus',
+    voice: 'Stimme', automatic: 'Automatisch',
+    no_voice_found: 'Auf diesem Gerät wurde keine Stimme für {l} gefunden. Installiere eine in den Einstellungen deines Handys oder Browsers.',
+    voice_tip: 'Klingt roboterhaft? Installiere in den Geräteeinstellungen eine bessere Stimme für {l} (kostenlos): auf dem iPhone unter Bedienungshilfen > Gesprochene Inhalte > Stimmen, dort eine „Erweitert“-Stimme laden. Auf Android die Google-Sprachdaten installieren. Am Laptop hat Microsoft Edge die besten kostenlosen Stimmen.',
+    no_voice_card: 'Auf diesem Gerät ist keine Stimme für {l} installiert, deshalb gibt es für diese Lektion keinen Ton.',
+    needs_more: 'Zu wenige Wendungen', last: 'Zuletzt: {x}', not_tried: 'Noch nicht probiert', per_round: '{n} pro Runde',
+    m_cards: 'Karteikarten', m_gaps: 'Lückentext', m_quiz: 'Quiz', m_match: 'Zuordnen',
+    finished: 'Fertig', r_clean: 'Fehlerfrei.', r_solid: 'Solide. Ein paar solltest du wiederholen.', r_more: 'Noch eine Runde lohnt sich.',
+    retry: 'Fehler üben', again_go: 'Nochmal', back_lesson: 'Zurück zur Lektion',
+    question: 'Frage', answer: 'Antwort', flip_aria: '{s}. Drücken, um die Karte umzudrehen.', hear: 'Wendung anhören',
+    again: 'Nochmal', got: 'Gewusst', tap_flip: 'Tippe auf die Karte, um sie umzudrehen.',
+    show_q: 'Zuerst die Frageseite zeigen', show_a: 'Zuerst die Antwortseite zeigen',
+    slow_on: 'Langsame Stimme: an', slow_off: 'Langsame Stimme: aus', known: '{k} / {n} gewusst', cards_known: 'Karten gleich beim ersten Mal gewusst',
+    sentences_ok: 'Sätze richtig', blank: 'Lücke {k}', type_phrase: 'Tippe die Wendung', fill_gap: 'Fülle die Lücke',
+    check: 'Prüfen', correct: 'Richtig.', not_quite: 'Nicht ganz.', answer_green: 'Die richtige Antwort steht in Grün.',
+    see_results: 'Ergebnis ansehen', next: 'Weiter', gap_hint: 'Bedeutung: {x}',
+    questions_ok: 'Fragen richtig', q_mean: 'Was bedeutet „{a}“?', q_which: 'Welche Wendung bedeutet „{b}“?',
+    no_slips: 'Keine Fehler', pairs_matched: '{n} Paare zugeordnet', round_of: 'Runde {r} von {m} · {s}',
+    match_help: 'Tippe links eine an, dann rechts den passenden Partner',
+    fb_title: 'Feedback', fb_sub: 'Etwas unklar, kaputt oder vermisst? Schreib mir, ich lese es.',
+    fb_msg: 'Deine Nachricht', fb_name: 'Dein Name (optional)', fb_email: 'Deine E-Mail, wenn du eine Antwort möchtest (optional)', fb_trap: 'Leer lassen',
+    fb_send: 'Senden', fb_empty: 'Schreib zuerst eine Nachricht.', fb_thanks: 'Danke, gesendet.', fb_sending: 'Sende…',
+    fb_fail: 'Senden fehlgeschlagen', fb_retry: ' Dein Text ist noch da, versuch es nochmal.', fb_net: 'Keine Verbindung. Dein Text ist noch da, versuch es nochmal, wenn du online bist.',
+    l_en: 'Englisch', l_es: 'Spanisch', l_ru: 'Russisch', l_de: 'Deutsch',
+    'pl.chunk': {one: 'Ausdruck', other: 'Ausdrücke'}, 'pl.card': {one: 'Karte', other: 'Karten'}, 'pl.pair': {one: 'Paar', other: 'Paare'},
+    'pl.slip': {one: 'Fehler', other: 'Fehler'}, 'pl.lesson': {one: 'Lektion', other: 'Lektionen'}
+  },
+  sr: {
+    ui_name: 'Srpski',
+    your_lessons: 'Tvoje lekcije',
+    sub: 'Dodaj beleške sa svakog časa (PDF ili Markdown). Izrazi i vokabular iz njih postaju kartice, popunjavanje praznina, kviz i spajanje.',
+    notes_lang: 'Jezik beleški',
+    notes_lang_hint: 'Jezik leve kolone, onaj koji učiš. Od njega zavisi glas. Izaberi ga pre dodavanja fajla.',
+    drop_t: 'Dodaj beleške sa časa', drop_d: 'Izaberi PDF ili .md fajlove ili ih prevuci ovde',
+    nosave: 'Ovaj pregledač ne dozvoljava stranici da bilo šta sačuva, pa će lekcije nestati kad zatvoriš karticu.',
+    lessons: 'Lekcije', mixed: 'Sve lekcije zajedno', mixed_sub: '{c} iz {n} {w}',
+    added: 'dodato {d}', read: 'Čitaj', practise: 'Vežbaj', remove: 'Ukloni', remove_again: 'Dodirni ponovo da ukloniš',
+    how_h: 'Kako treba da izgledaju beleške',
+    how_p: 'Vežbe nastaju iz tabele ispod naslova „Vocabulary & chunks“: izraz levo, značenje desno. Ceo fajl ostaje u aplikaciji, pa možeš prvo da pročitaš teoriju dugmetom Čitaj.',
+    sample_btn: 'Probaj primer lekcije', sample_added: 'Dodata je „Sample lesson“. Možeš je ukloniti bilo kad.',
+    foot: 'Lekcije se čuvaju samo na ovom uređaju, pa telefon i laptop imaju svaki svoju listu. Verzija aplikacije {v}.',
+    feedback_btn: 'Pošalji povratnu informaciju', app_lang: 'Jezik aplikacije',
+    install: 'Instaliraj kao aplikaciju', install_ios: 'Za instalaciju: dodirni dugme Podeli, pa Dodaj na početni ekran.',
+    reading: 'Čitam {f}…', added_list: 'Dodato: {x}.',
+    err_table: 'nije pronađena tabela sa izrazima. Beleškama treba tabela sa izrazom levo i značenjem desno.',
+    err_notext: 'ovaj PDF nema tekst koji se može obeležiti (liči na sken). Pošalji .md verziju.',
+    err_nolib: 'čitač PDF-a se nije učitao. Proveri vezu i ponovo učitaj stranicu.',
+    err_read: 'nije moguće pročitati ovaj fajl. Probaj .md verziju.',
+    back: '← Nazad', all_lessons: '← Sve lekcije',
+    notes: 'Beleške', opening: 'Otvaram…', file_gone: 'Ovaj fajl više nije sačuvan na uređaju. Dodaj ga ponovo da bi ga pročitao.',
+    practise_this: 'Vežbaj ovu lekciju', zoom_out: 'Umanji', zoom_in: 'Uvećaj',
+    zoom_hint: 'Dodirni + da uvećaš, pa prevlači u stranu da se krećeš po stranici.', drawing: 'Crtam stranice…',
+    page_of: 'Strana {n} od {m}', err_draw: 'Nije moguće prikazati ovaj PDF. Probaj .md verziju.', err_open: 'Nije moguće otvoriti ovaj PDF. Probaj .md verziju.',
+    read_first: 'Prvo pročitaj beleške', speak_in: 'Govori na', voice_lang: 'Jezik glasa', off: 'Isključeno',
+    voice: 'Glas', automatic: 'Automatski',
+    no_voice_found: 'Na ovom uređaju nema glasa za jezik: {l}. Instaliraj ga u podešavanjima telefona ili pregledača.',
+    voice_tip: 'Zvuči robotski? Instaliraj bolji glas za jezik {l} (besplatno) u podešavanjima uređaja: na iPhone-u Pristupačnost > Izgovoreni sadržaj > Glasovi, pa preuzmi poboljšani. Na Androidu instaliraj Google glasovne podatke. Na laptopu Microsoft Edge ima najbolje besplatne glasove.',
+    no_voice_card: 'Na ovom uređaju nije instaliran glas za jezik: {l}, pa za ovu lekciju nema zvuka.',
+    needs_more: 'Treba više izraza', last: 'Poslednje: {x}', not_tried: 'Još nije probano', per_round: '{n} po rundi',
+    m_cards: 'Kartice', m_gaps: 'Popuni praznine', m_quiz: 'Kviz', m_match: 'Spajanje',
+    finished: 'Završeno', r_clean: 'Bez grešaka.', r_solid: 'Dobro. Nekoliko vredi ponoviti.', r_more: 'Vredi proći još jednom.',
+    retry: 'Vežbaj greške', again_go: 'Ponovo', back_lesson: 'Nazad na lekciju',
+    question: 'Pitanje', answer: 'Odgovor', flip_aria: '{s}. Pritisni da okreneš karticu.', hear: 'Poslušaj izraz',
+    again: 'Ponovo', got: 'Znam', tap_flip: 'Dodirni karticu da je okreneš.',
+    show_q: 'Prvo prikaži pitanje', show_a: 'Prvo prikaži odgovor',
+    slow_on: 'Spor glas: uključen', slow_off: 'Spor glas: isključen', known: 'Znam: {k} / {n}', cards_known: 'kartica iz prvog pokušaja',
+    sentences_ok: 'tačnih rečenica', blank: 'Praznina {k}', type_phrase: 'Ukucaj izraz', fill_gap: 'Popuni prazninu',
+    check: 'Proveri', correct: 'Tačno.', not_quite: 'Nije baš.', answer_green: 'Tačan odgovor je zelenom bojom.',
+    see_results: 'Prikaži rezultat', next: 'Dalje', gap_hint: 'Značenje: {x}',
+    questions_ok: 'tačnih pitanja', q_mean: 'Šta znači „{a}“?', q_which: 'Koji izraz znači „{b}“?',
+    no_slips: 'Bez grešaka', pairs_matched: 'Spojenih parova: {n}', round_of: 'Runda {r} od {m} · {s}',
+    match_help: 'Dodirni jedan levo, pa njegov par desno',
+    fb_title: 'Povratna informacija', fb_sub: 'Nešto nejasno, pokvareno ili nedostaje? Napiši mi, pročitaću.',
+    fb_msg: 'Tvoja poruka', fb_name: 'Tvoje ime (nije obavezno)', fb_email: 'Tvoj e-mail, ako želiš odgovor (nije obavezno)', fb_trap: 'Ostavi prazno',
+    fb_send: 'Pošalji', fb_empty: 'Prvo napiši poruku.', fb_thanks: 'Hvala, poslato.', fb_sending: 'Šaljem…',
+    fb_fail: 'Slanje nije uspelo', fb_retry: ' Tvoj tekst je sačuvan, pokušaj ponovo.', fb_net: 'Nema veze. Tvoj tekst je sačuvan, pokušaj ponovo kad budeš na mreži.',
+    l_en: 'engleski', l_es: 'španski', l_ru: 'ruski', l_de: 'nemački',
+    'pl.chunk': {one: 'izraz', few: 'izraza', other: 'izraza'}, 'pl.card': {one: 'kartica', few: 'kartice', other: 'kartica'},
+    'pl.pair': {one: 'par', few: 'para', other: 'parova'}, 'pl.slip': {one: 'greška', few: 'greške', other: 'grešaka'},
+    'pl.lesson': {one: 'lekcije', few: 'lekcija', other: 'lekcija'}
+  }
+};
+
+</script>
+<script>
 (function(){
   var app = document.getElementById('app');
   var LIB_KEY = 'revision-room:library:v1';
   var S = {lessons: [], last: {}};
   var IS_PWA = true;
-  var VERSION_LABEL = '9, 16 Oct';
+  var UIS = ['en', 'ru', 'es', 'de', 'sr'], UI = 'en';
+  try { UI = localStorage.getItem('revision-room:ui') || ''; } catch (e) { UI = ''; }
+  if (UIS.indexOf(UI) < 0) {
+    var nl = String((navigator.languages && navigator.languages[0]) || navigator.language || 'en').slice(0, 2).toLowerCase();
+    UI = nl === 'hr' || nl === 'bs' ? 'sr' : (UIS.indexOf(nl) > -1 ? nl : 'en');
+  }
+  document.documentElement.lang = UI;
+  function t(k, v){
+    var d = I18N[UI][k]; if (d == null) d = I18N.en[k]; if (d == null) d = k;
+    return String(d).replace(/\{(\w+)\}/g, function(m, x){ return v && x in v ? v[x] : m; });
+  }
+  function word(n, k){
+    var f = I18N[UI][k] || I18N.en[k], cat = 'other';
+    try { cat = new Intl.PluralRules(UI).select(n); } catch (e) {}
+    return f[cat] || f.other;
+  }
+  Parser.t = t;
+  var VERSION_LABEL = '10, 16 Oct';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
@@ -440,7 +730,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
   /* ---------- voices: the phone's own text-to-speech ---------- */
   var SPEECH = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
   var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru'], de: ['de-DE', 'de-AT', 'de-CH', 'de']};
-  var LANG_NAME = {en: 'English', es: 'Spanish', ru: 'Russian', de: 'German'};
+  function LN(lg){ return t('l_' + lg); }
   var SLOW = false;
   try { SLOW = localStorage.getItem('revision-room:slow') === '1'; } catch (e) {}
   function allVoices(){ try { return speechSynthesis.getVoices() || []; } catch (e) { return []; } }
@@ -454,10 +744,10 @@ if (typeof module !== 'undefined') module.exports = Parser;
   function voiceSelect(lg){
     if (!SPEECH || !LOCALES[lg]) return '';
     var vs = voiceList(lg);
-    if (!vs.length) return '<p class="hint" id="vhint">No ' + LANG_NAME[lg] + ' voice found on this device. Install one in your phone or browser settings.</p>';
-    return '<div class="vpick"><label for="vsel" class="label" style="margin:0">Voice</label><select id="vsel">' +
-      '<option value="">Automatic</option>' + vs.map(function(v){ return '<option value="' + esc(v.name) + '"' + (CHOSEN[lg] === v.name ? ' selected' : '') + '>' + esc(v.name) + '</option>'; }).join('') + '</select></div>' +
-      '<p class="hint">Sounds robotic? Install a better ' + LANG_NAME[lg] + ' voice (free) in your device settings: on iPhone, Accessibility > Spoken Content > Voices, then download an Enhanced one. On Android, install Google text-to-speech voice data. On a laptop, Microsoft Edge has the best free voices.</p>';
+    if (!vs.length) return '<p class="hint" id="vhint">' + esc(t('no_voice_found', {l: LN(lg)})) + '</p>';
+    return '<div class="vpick"><label for="vsel" class="label" style="margin:0">' + esc(t('voice')) + '</label><select id="vsel">' +
+      '<option value="">' + esc(t('automatic')) + '</option>' + vs.map(function(v){ return '<option value="' + esc(v.name) + '"' + (CHOSEN[lg] === v.name ? ' selected' : '') + '>' + esc(v.name) + '</option>'; }).join('') + '</select></div>' +
+      '<p class="hint">' + esc(t('voice_tip', {l: LN(lg)})) + '</p>';
   }
   function pickVoice(lg){
     if (CHOSEN[lg]) { var c = allVoices().filter(function(v){ return v.name === CHOSEN[lg]; })[0]; if (c) return c; }
@@ -493,11 +783,11 @@ if (typeof module !== 'undefined') module.exports = Parser;
   var shuffle = Parser.shuffle, sample = Parser.sample;
   function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function $(s){ return app.querySelector(s); }
-  function plural(n, w, ws){ return n + ' ' + (n === 1 ? w : (ws || w + 's')); }
+  function plural(n, w){ return n + ' ' + word(n, 'pl.' + w); }
   function norm(s){ return String(s).toLowerCase().replace(/[‘’]/g, "'").replace(/[.,!?;:]+$/, '').replace(/\s+/g, ' ').trim(); }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function top(i, n, label){
-    return '<div class="top"><button class="link" data-back>← Back</button><span class="count">' + esc(label) + '</span></div>' +
+    return '<div class="top"><button class="link" data-back>' + esc(t('back')) + '</button><span class="count">' + esc(label) + '</span></div>' +
       '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + i + '"><i style="width:' + (n ? i / n * 100 : 0) + '%"></i></div>';
   }
 
@@ -526,10 +816,10 @@ if (typeof module !== 'undefined') module.exports = Parser;
     if (standalone) { n.innerHTML = ''; return; }
     var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (deferredInstall) {
-      n.innerHTML = '<button class="btn ghost" id="inst" style="flex:none;margin-top:18px">Install as an app</button>';
+      n.innerHTML = '<button class="btn ghost" id="inst" style="flex:none;margin-top:18px">' + esc(t('install')) + '</button>';
       document.getElementById('inst').onclick = function(){ deferredInstall.prompt(); deferredInstall = null; n.innerHTML = ''; };
     } else if (ios) {
-      n.innerHTML = '<p class="foot" style="margin-top:18px">To install: tap the Share button, then Add to Home Screen.</p>';
+      n.innerHTML = '<p class="foot" style="margin-top:18px">' + esc(t('install_ios')) + '</p>';
     }
   }
   function checkShared(){
@@ -548,17 +838,18 @@ if (typeof module !== 'undefined') module.exports = Parser;
 
   /* ---------- navigation ---------- */
   app.addEventListener('click', function(e){
-    var t;
+    var tg;
     if (e.target.closest('[data-back]')) { stopSpeech(); if (cur) menu(cur); else library(); return; }
     if (e.target.closest('[data-lib]')) { stopSpeech(); library(); return; }
-    if ((t = e.target.closest('[data-lang]'))) { setLang(t.dataset.lang); return; }
-    if ((t = e.target.closest('[data-addlang]'))) { S.addLang = t.dataset.addlang; persist(); [].forEach.call(app.querySelectorAll('[data-addlang]'), function(b){ var on = b.dataset.addlang === S.addLang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return; }
+    if ((tg = e.target.closest('[data-lang]'))) { setLang(tg.dataset.lang); return; }
+    if ((tg = e.target.closest('[data-addlang]'))) { S.addLang = tg.dataset.addlang; persist(); [].forEach.call(app.querySelectorAll('[data-addlang]'), function(b){ var on = b.dataset.addlang === S.addLang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return; }
+    if ((tg = e.target.closest('[data-ui]'))) { UI = tg.dataset.ui; try { localStorage.setItem('revision-room:ui', UI); } catch (x) {} document.documentElement.lang = UI; library(); return; }
     if (e.target.closest('[data-feedback]')) { if (FB_URL) window.open(FB_URL, '_blank', 'noopener'); else feedback(); return; }
-    if ((t = e.target.closest('[data-mode]'))) { run(t.dataset.mode); return; }
-    if ((t = e.target.closest('[data-open]'))) { openLesson(t.dataset.open); return; }
-    if ((t = e.target.closest('[data-read]'))) { reader(t.dataset.read); return; }
-    if ((t = e.target.closest('[data-del]'))) { armDelete(t); return; }
-    if (e.target.closest('#sample')) { var sid = addLesson('Sample lesson', Parser.parseMarkdown(SAMPLE)); putFile(sid, {type: 'md', name: 'Sample lesson.md', text: SAMPLE}); notice = {kind: 'good', text: 'Added “Sample lesson”. Remove it any time.'}; library(); }
+    if ((tg = e.target.closest('[data-mode]'))) { run(tg.dataset.mode); return; }
+    if ((tg = e.target.closest('[data-open]'))) { openLesson(tg.dataset.open); return; }
+    if ((tg = e.target.closest('[data-read]'))) { reader(tg.dataset.read); return; }
+    if ((tg = e.target.closest('[data-del]'))) { armDelete(tg); return; }
+    if (e.target.closest('#sample')) { var sid = addLesson('Sample lesson', Parser.parseMarkdown(SAMPLE)); putFile(sid, {type: 'md', name: 'Sample lesson.md', text: SAMPLE}); notice = {kind: 'good', text: t('sample_added')}; library(); }
   });
 
   function lessonLang(l){ return l.lang || 'en'; }
@@ -567,7 +858,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
     if (id === '*') {
       var items = [];
       S.lessons.forEach(function(l){ items = items.concat(withLang(l)); });
-      return {id: '*', title: 'All lessons mixed', items: Parser.dedupe(items)};
+      return {id: '*', title: t('mixed'), items: Parser.dedupe(items)};
     }
     var l = S.lessons.filter(function(x){ return x.id === id; })[0];
     return l ? {id: l.id, title: l.title, items: withLang(l), lang: lessonLang(l)} : null;
@@ -589,72 +880,76 @@ if (typeof module !== 'undefined') module.exports = Parser;
       S.lessons = S.lessons.filter(function(l){ return l.id !== id; });
       delete S.last[id]; persist(); notice = null; delFile(id).then(library); return;
     }
-    btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = 'Tap again to remove';
-    setTimeout(function(){ if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.textContent = 'Remove'; } }, 3000);
+    btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = t('remove_again');
+    setTimeout(function(){ if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.textContent = t('remove'); } }, 3000);
   }
 
   /* ---------- feedback (Web3Forms -> teacher's email) ---------- */
   function feedback(){
-    app.innerHTML = '<div class="bar"><button class="link" data-back>\u2190 Back</button></div><header><h1><span class="hl">Feedback</span></h1><p class="sub">Something confusing, broken or missing? Tell me and I will read it.</p></header>' +
-      '<form class="fb" id="fbf" novalidate><label>Your message<textarea id="fbm" maxlength="3000" required></textarea></label>' +
-      '<label>Your name (optional)<input id="fbn" maxlength="80" autocomplete="name"></label>' +
-      '<label>Your email, if you want a reply (optional)<input id="fbe" type="email" maxlength="120" autocomplete="email"></label>' +
-      '<div class="trap" aria-hidden="true"><label>Leave empty<input id="fbt" tabindex="-1" autocomplete="off"></label></div>' +
-      '<div id="fbs" class="msg" role="status"></div><div class="row"><button class="btn primary" id="fbsend" type="submit">Send</button></div></form>';
+    app.innerHTML = '<div class="bar"><button class="link" data-back>\u2190 Back</button></div><header><h1><span class="hl">' + esc(t('fb_title')) + '</span></h1><p class="sub">' + esc(t('fb_sub')) + '</p></header>' +
+      '<form class="fb" id="fbf" novalidate><label>' + esc(t('fb_msg')) + '<textarea id="fbm" maxlength="3000" required></textarea></label>' +
+      '<label>' + esc(t('fb_name')) + '<input id="fbn" maxlength="80" autocomplete="name"></label>' +
+      '<label>' + esc(t('fb_email')) + '<input id="fbe" type="email" maxlength="120" autocomplete="email"></label>' +
+      '<div class="trap" aria-hidden="true"><label>' + esc(t('fb_trap')) + '<input id="fbt" tabindex="-1" autocomplete="off"></label></div>' +
+      '<div id="fbs" class="msg" role="status"></div><div class="row"><button class="btn primary" id="fbsend" type="submit">' + esc(t('fb_send')) + '</button></div></form>';
     window.scrollTo(0, 0);
     var form = $('#fbf'), st = $('#fbs'), btn = $('#fbsend');
     form.addEventListener('submit', function(e){
       e.preventDefault();
       var m = $('#fbm').value.trim();
-      if (!m) { st.className = 'msg bad'; st.textContent = 'Write a message first.'; return; }
-      if ($('#fbt').value) { st.className = 'msg good'; st.textContent = 'Thank you, sent.'; form.querySelector('#fbm').value = ''; return; }
+      if (!m) { st.className = 'msg bad'; st.textContent = t('fb_empty'); return; }
+      if ($('#fbt').value) { st.className = 'msg good'; st.textContent = t('fb_thanks'); form.querySelector('#fbm').value = ''; return; }
       var mail = $('#fbe').value.trim(), nm = $('#fbn').value.trim();
       var payload = {access_key: FB_KEY, subject: 'Revision Room feedback' + (nm ? ' from ' + nm : ''), from_name: 'Revision Room', name: nm || 'Anonymous',
         message: m + '\n\n---\nApp version ' + VERSION_LABEL + ' | lessons: ' + S.lessons.length + ' | ' + (navigator.userAgent || '')};
       if (mail) { payload.email = mail; payload.replyto = mail; }
-      btn.disabled = true; st.className = 'msg'; st.textContent = 'Sending\u2026';
+      btn.disabled = true; st.className = 'msg'; st.textContent = t('fb_sending');
       fetch('https://api.web3forms.com/submit', {method: 'POST', headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}, body: JSON.stringify(payload)})
         .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {ok: r.ok && j.success !== false, j: j}; }); })
         .then(function(o){
-          if (o.ok) { st.className = 'msg good'; st.textContent = 'Thank you, sent.'; $('#fbm').value = ''; btn.disabled = false; }
-          else { st.className = 'msg bad'; st.textContent = 'Could not send' + (o.j && o.j.message ? ': ' + o.j.message : '.') + ' Your text is still here, try again.'; btn.disabled = false; }
-        }, function(){ st.className = 'msg bad'; st.textContent = 'No connection. Your text is still here, try again when you are online.'; btn.disabled = false; });
+          if (o.ok) { st.className = 'msg good'; st.textContent = t('fb_thanks'); $('#fbm').value = ''; btn.disabled = false; }
+          else { st.className = 'msg bad'; st.textContent = t('fb_fail') + (o.j && o.j.message ? ': ' + o.j.message : '.') + t('fb_retry'); btn.disabled = false; }
+        }, function(){ st.className = 'msg bad'; st.textContent = t('fb_net'); btn.disabled = false; });
     });
   }
 
   /* ---------- library ---------- */
   function fmtDate(ts){ try { return new Date(ts).toLocaleDateString('en-GB', {day: 'numeric', month: 'short'}); } catch (e) { return ''; } }
+  function uiPicker(){
+    return '<div class="pick" style="margin-top:22px"><span class="label" style="margin:0">' + esc(t('app_lang')) + '</span><div class="seg" role="group" aria-label="' + esc(t('app_lang')) + '">' +
+      UIS.map(function(k){ return '<button class="segb' + (UI === k ? ' on' : '') + '" data-ui="' + k + '" aria-pressed="' + (UI === k) + '">' + I18N[k].ui_name + '</button>'; }).join('') + '</div></div>';
+  }
   function library(){
     cur = null;
     var ls = S.lessons, html =
-      '<header><p class="eyebrow"><span>Revision Room</span></p><h1><span class="hl">Your lessons</span></h1>' +
-      '<p class="sub">Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.</p></header>' +
-      '<div class="pick"><span class="label" style="margin:0">Language of the notes</span><div class="seg" role="group" aria-label="Language of the notes">' +
+      '<header><p class="eyebrow"><span>Revision Room</span></p><h1><span class="hl">' + esc(t('your_lessons')) + '</span></h1>' +
+      '<p class="sub">' + esc(t('sub')) + '</p></header>' +
+      '<div class="pick"><span class="label" style="margin:0">' + esc(t('notes_lang')) + '</span><div class="seg" role="group" aria-label="' + esc(t('notes_lang')) + '">' +
         ['en', 'es', 'ru', 'de'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
-        '</div><p class="hint">The language of the left column, the one you want to learn. It sets the voice. Pick it before you add a file.</p></div>' +
-      '<label class="drop" id="drop" for="file"><span class="dt">Add lesson notes</span><span class="dd">Choose PDF or .md files, or drop them here</span></label>' +
+        '</div><p class="hint">' + esc(t('notes_lang_hint')) + '</p></div>' +
+      '<label class="drop" id="drop" for="file"><span class="dt">' + esc(t('drop_t')) + '</span><span class="dd">' + esc(t('drop_d')) + '</span></label>' +
       '<input class="vh" type="file" id="file" multiple accept=".pdf,.md,.markdown,.txt,application/pdf,text/markdown,text/plain">' +
       '<div id="msg" class="msg ' + (notice ? notice.kind : '') + '" role="status">' + (notice ? esc(notice.text) : '') + '</div>' +
-      (canSave ? '' : '<p class="warn">This browser is not letting the page save anything, so your lessons will be gone when you close the tab.</p>');
+      (canSave ? '' : '<p class="warn">' + esc(t('nosave')) + '</p>');
     if (ls.length) {
-      html += '<section class="sec"><p class="label">Lessons</p><ul class="lessons">';
+      html += '<section class="sec"><p class="label">' + esc(t('lessons')) + '</p><ul class="lessons">';
       if (ls.length > 1) {
         var tot = deckOf('*');
-        html += '<li class="lesson"><div class="lm"><b class="lt">All lessons mixed</b><span class="lc">' + plural(tot.items.length, 'chunk') + ' from ' + ls.length + ' lessons</span></div><div class="la"><button class="btn primary sm" data-open="*">Practise</button></div></li>';
+        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(t('mixed')) + '</b><span class="lc">' + esc(t('mixed_sub', {c: plural(tot.items.length, 'chunk'), n: ls.length, w: word(ls.length, 'pl.lesson')})) + '</span></div><div class="la"><button class="btn primary sm" data-open="*">' + esc(t('practise')) + '</button></div></li>';
       }
       ls.forEach(function(l){
-        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + (l.lang && LANG_NAMES[l.lang] ? LANG_NAMES[l.lang] + ' · ' : '') + plural(l.items.length, 'chunk') + ' · added ' + esc(fmtDate(l.added)) + '</span></div>' +
-          '<div class="la">' + (have[l.id] ? '<button class="btn ghost sm" data-read="' + esc(l.id) + '">Read</button>' : '') + '<button class="btn primary sm" data-open="' + esc(l.id) + '">Practise</button><button class="btn ghost sm" data-del="' + esc(l.id) + '">Remove</button></div></li>';
+        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + (l.lang && LANG_NAMES[l.lang] ? LANG_NAMES[l.lang] + ' · ' : '') + plural(l.items.length, 'chunk') + ' · ' + esc(t('added', {d: fmtDate(l.added)})) + '</span></div>' +
+          '<div class="la">' + (have[l.id] ? '<button class="btn ghost sm" data-read="' + esc(l.id) + '">' + esc(t('read')) + '</button>' : '') + '<button class="btn primary sm" data-open="' + esc(l.id) + '">' + esc(t('practise')) + '</button><button class="btn ghost sm" data-del="' + esc(l.id) + '">' + esc(t('remove')) + '</button></div></li>';
       });
       html += '</ul></section>';
     } else {
-      html += '<section class="how"><h2>What the notes should look like</h2>' +
-        '<p>The exercises come from the table under \u201cVocabulary &amp; chunks\u201d: the phrase on the left and its meaning on the right. The whole file stays in the app, so you can read the theory first with the Read button.</p>' +
+      html += '<section class="how"><h2>' + esc(t('how_h')) + '</h2>' +
+        '<p>' + esc(t('how_p')) + '</p>' +
         '<div class="mini"><table><thead><tr><th>English chunk</th><th>Russian</th></tr></thead><tbody>' +
         '<tr><td>to make up your mind</td><td>принять решение</td></tr><tr><td>sooner or later</td><td>рано или поздно</td></tr><tr><td>to keep an eye on</td><td>присматривать за</td></tr></tbody></table></div>' +
-        '<button class="btn ghost" id="sample" style="flex:none">Try a sample lesson</button></section>';
+        '<button class="btn ghost" id="sample" style="flex:none">' + esc(t('sample_btn')) + '</button></section>';
     }
-    html += '<div id="install"></div>' + ((FB_KEY || FB_URL) ? '<div class="row" style="margin-top:26px"><button class="btn ghost sm" data-feedback>Send feedback</button></div>' : '') + '<p class="foot">Lessons are stored on this device only, so a phone and a laptop each keep their own list. App version ' + VERSION_LABEL + '.</p>';
+    html += '<div id="install"></div>' + ((FB_KEY || FB_URL) ? '<div class="row" style="margin-top:26px"><button class="btn ghost sm" data-feedback>' + esc(t('feedback_btn')) + '</button></div>' : '') + uiPicker() + '<p class="foot">' + esc(t('foot', {v: VERSION_LABEL})) + '</p>';
     app.innerHTML = html;
     notice = null;
     installHint();
@@ -705,22 +1000,20 @@ if (typeof module !== 'undefined') module.exports = Parser;
     var msg = $('#msg'), ok = [], bad = [];
     for (var i = 0; i < files.length; i++) {
       var f = files[i], title = f.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ').trim() || 'Lesson';
-      msg.className = 'msg'; msg.textContent = 'Reading ' + f.name + '…';
+      msg.className = 'msg'; msg.textContent = t('reading', {f: f.name});
       try {
         var isPdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
         var r, rec;
         if (isPdf) { var o = await readPdf(f); r = o.r; rec = {type: 'pdf', name: f.name, data: o.data}; }
         else { var txt = await readText(f); r = Parser.parseMarkdown(txt); rec = {type: 'md', name: f.name, text: txt}; }
-        if (!r.items.length) bad.push('“' + f.name + '”: no phrase table found. The notes need a table with the phrase on the left and its meaning on the right.');
+        if (!r.items.length) bad.push('“' + f.name + '”: ' + t('err_table'));
         else { var lid = addLesson(title, r); await putFile(lid, rec); ok.push('“' + title + '”: ' + plural(r.items.length, 'chunk')); }
       } catch (e) {
-        var why = e && e.message === 'notext' ? 'this PDF has no selectable text (it looks like a scan). Send the .md version instead.'
-          : e && e.message === 'nolib' ? 'the PDF reader did not load. Check your connection and reload the page.'
-          : 'could not read this file. Try the .md version.';
+        var why = e && e.message === 'notext' ? t('err_notext') : e && e.message === 'nolib' ? t('err_nolib') : t('err_read');
         bad.push('“' + f.name + '”: ' + why);
       }
     }
-    notice = {kind: bad.length ? (ok.length ? '' : 'bad') : 'good', text: (ok.length ? 'Added ' + ok.join('; ') + '.' : '') + (ok.length && bad.length ? '\n' : '') + bad.join('\n')};
+    notice = {kind: bad.length ? (ok.length ? '' : 'bad') : 'good', text: (ok.length ? t('added_list', {x: ok.join('; ')}) : '') + (ok.length && bad.length ? '\n' : '') + bad.join('\n')};
     library();
   }
 
@@ -769,24 +1062,24 @@ if (typeof module !== 'undefined') module.exports = Parser;
 
   function reader(id){
     var lesson = S.lessons.filter(function(l){ return l.id === id; })[0];
-    var title = lesson ? lesson.title : 'Notes';
+    var title = lesson ? lesson.title : t('notes');
     var ZOOMS = [1, 1.5, 2, 3], zi = 0, token = 0, pdfDoc = null, host = null;
     onResize = null;
-    app.innerHTML = '<div class="bar"><button class="link" data-back>← Back</button></div><h1 class="rt">' + esc(title) + '</h1><p class="rmsg">Opening…</p>';
+    app.innerHTML = '<div class="bar"><button class="link" data-back>' + esc(t('back')) + '</button></div><h1 class="rt">' + esc(title) + '</h1><p class="rmsg">' + esc(t('opening')) + '</p>';
     window.scrollTo(0, 0);
     getFile(id).then(function(rec){
-      if (!rec) { delete have[id]; notice = {kind: 'bad', text: 'This file is no longer stored on this device. Add it again to read it.'}; library(); return; }
-      var practise = '<div class="row"><button class="btn primary" data-open="' + esc(id) + '">Practise this lesson</button></div>';
+      if (!rec) { delete have[id]; notice = {kind: 'bad', text: t('file_gone')}; library(); return; }
+      var practise = '<div class="row"><button class="btn primary" data-open="' + esc(id) + '">' + esc(t('practise_this')) + '</button></div>';
       if (rec.type === 'md') {
-        app.innerHTML = '<div class="bar"><button class="link" data-back>← Back</button></div><h1 class="rt">' + esc(title) + '</h1>' +
+        app.innerHTML = '<div class="bar"><button class="link" data-back>' + esc(t('back')) + '</button></div><h1 class="rt">' + esc(title) + '</h1>' +
           '<div class="doc">' + mdToHtml(rec.text) + '</div>' + practise;
         return;
       }
-      app.innerHTML = '<div class="bar"><button class="link" data-back>← Back</button><div class="zoom"><button class="zbtn" id="zout" aria-label="Zoom out">−</button><span class="zl" id="zl">100%</span><button class="zbtn" id="zin" aria-label="Zoom in">+</button></div></div>' +
-        '<h1 class="rt">' + esc(title) + '</h1><p class="hint">Tap + to zoom in, then swipe sideways to move around the page.</p>' +
-        '<div class="pages" id="pages"><p class="rmsg">Drawing the pages…</p></div>' + practise;
+      app.innerHTML = '<div class="bar"><button class="link" data-back>' + esc(t('back')) + '</button><div class="zoom"><button class="zbtn" id="zout" aria-label="' + esc(t('zoom_out')) + '">−</button><span class="zl" id="zl">100%</span><button class="zbtn" id="zin" aria-label="' + esc(t('zoom_in')) + '">+</button></div></div>' +
+        '<h1 class="rt">' + esc(title) + '</h1><p class="hint">' + esc(t('zoom_hint')) + '</p>' +
+        '<div class="pages" id="pages"><p class="rmsg">' + esc(t('drawing')) + '</p></div>' + practise;
       host = $('#pages');
-      if (!window.pdfjsLib) { host.innerHTML = '<p class="rmsg">The PDF reader did not load. Check your connection and reload the page.</p>'; return; }
+      if (!window.pdfjsLib) { host.innerHTML = '<p class="rmsg">' + esc(t('err_nolib')) + '</p>'; return; }
       function setZoom(d){ zi = Math.max(0, Math.min(ZOOMS.length - 1, zi + d)); $('#zl').textContent = Math.round(ZOOMS[zi] * 100) + '%'; $('#zout').disabled = zi === 0; $('#zin').disabled = zi === ZOOMS.length - 1; draw(); }
       $('#zout').onclick = function(){ setZoom(-1); };
       $('#zin').onclick = function(){ setZoom(1); };
@@ -806,43 +1099,43 @@ if (typeof module !== 'undefined') module.exports = Parser;
               var c = document.createElement('canvas');
               c.className = 'pg'; c.width = Math.floor(w * dpr); c.height = Math.floor(cssH * dpr);
               c.style.width = w + 'px'; c.style.height = cssH + 'px';
-              c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Page ' + n + ' of ' + pdfDoc.numPages);
+              c.setAttribute('role', 'img'); c.setAttribute('aria-label', t('page_of', {n: n, m: pdfDoc.numPages}));
               host.appendChild(c);
               return page.render({canvasContext: c.getContext('2d'), viewport: page.getViewport({scale: k * dpr})}).promise;
             });
           });
         })(n);
-        chain.catch(function(){ if (my === token && !host.childNodes.length) host.innerHTML = '<p class="rmsg">Could not draw this PDF. Try the .md version.</p>'; });
+        chain.catch(function(){ if (my === token && !host.childNodes.length) host.innerHTML = '<p class="rmsg">' + esc(t('err_draw')) + '</p>'; });
       }
       pdfjsLib.getDocument({data: new Uint8Array(rec.data.slice(0))}).promise.then(function(doc){
         pdfDoc = doc; draw();
         var lastW = host.clientWidth;
         onResize = function(){ if (!host.isConnected) { onResize = null; return; } if (Math.abs(host.clientWidth - lastW) > 20) { lastW = host.clientWidth; draw(); } };
-      }).catch(function(){ host.innerHTML = '<p class="rmsg">Could not open this PDF. Try the .md version.</p>'; });
+      }).catch(function(){ host.innerHTML = '<p class="rmsg">' + esc(t('err_open')) + '</p>'; });
     });
   }
 
   /* ---------- lesson menu ---------- */
   var MODES = [
-    {id: 'cards', name: 'Flashcards',    min: 1, count: function(d){ return plural(d.items.length, 'card'); }},
-    {id: 'gaps',  name: 'Fill the gaps', min: 1, count: function(d){ return Math.min(10, d.items.length) + ' per round'; }},
-    {id: 'quiz',  name: 'Quiz',          min: 2, count: function(d){ return Math.min(10, d.items.length) + ' per round'; }},
-    {id: 'match', name: 'Matching',      min: 3, count: function(d){ return plural(Math.min(12, d.items.length), 'pair'); }}
+    {id: 'cards', name: 'm_cards', min: 1, count: function(d){ return plural(d.items.length, 'card'); }},
+    {id: 'gaps',  name: 'm_gaps',  min: 1, count: function(d){ return t('per_round', {n: Math.min(10, d.items.length)}); }},
+    {id: 'quiz',  name: 'm_quiz',  min: 2, count: function(d){ return t('per_round', {n: Math.min(10, d.items.length)}); }},
+    {id: 'match', name: 'm_match', min: 3, count: function(d){ return plural(Math.min(12, d.items.length), 'pair'); }}
   ];
   function menu(deck){
     cur = deck;
     var last = S.last[deck.id] || {};
     app.innerHTML =
-      '<button class="link" data-lib>← All lessons</button>' +
+      '<button class="link" data-lib>' + esc(t('all_lessons')) + '</button>' +
       '<header><p class="eyebrow"><span>' + plural(deck.items.length, 'chunk') + '</span></p>' +
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
-      (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">Read the notes first</button></div>' : '') +
-      (SPEECH && deck.id !== '*' ? '<div class="voice"><span class="label" style="margin:0">Speak in</span><div class="seg" role="group" aria-label="Voice language">' +
-        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['off', 'Off']].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
+      (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">' + esc(t('read_first')) + '</button></div>' : '') +
+      (SPEECH && deck.id !== '*' ? '<div class="voice"><span class="label" style="margin:0">' + esc(t('speak_in')) + '</span><div class="seg" role="group" aria-label="' + esc(t('voice_lang')) + '">' +
+        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['off', t('off')]].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
       '<div class="tiles">' + MODES.map(function(m){
         var n = deck.items.length, off = n < m.min;
-        return '<button class="tile" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + m.name + '</span><span class="tc">' + (off ? 'Needs more chunks' : m.count(deck)) + '</span>' +
-          '<span class="tl">' + (last[m.id] ? 'Last: ' + esc(last[m.id]) : 'Not tried yet') + '</span></button>';
+        return '<button class="tile" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + esc(t(m.name)) + '</span><span class="tc">' + esc(off ? t('needs_more') : m.count(deck)) + '</span>' +
+          '<span class="tl">' + esc(last[m.id] ? t('last', {x: last[m.id]}) : t('not_tried')) + '</span></button>';
       }).join('') + '</div>';
     window.scrollTo(0, 0);
     bindVoiceSelect(deck);
@@ -862,10 +1155,10 @@ if (typeof module !== 'undefined') module.exports = Parser;
   function finish(id, o){
     stopSpeech();
     if (o.save !== false) { S.last[cur.id] = S.last[cur.id] || {}; S.last[cur.id][id] = o.last; persist(); }
-    var msg = o.pct >= 90 ? 'Clean run.' : o.pct >= 60 ? 'Solid. A few to revisit.' : 'Worth another pass.';
-    app.innerHTML = '<div class="res"><p class="label">Finished</p><p class="big">' + esc(o.big) + '</p><p class="sub">' + esc(o.sub) + '</p><p class="msg2">' + msg + '</p>' +
-      '<div class="row">' + (o.retry ? '<button class="btn primary" id="retry">Practise the mistakes</button>' : '') +
-      '<button class="btn ' + (o.retry ? 'ghost' : 'primary') + '" id="again">Go again</button><button class="btn ghost" data-back>Back to lesson</button></div></div>';
+    var msg = o.pct >= 90 ? t('r_clean') : o.pct >= 60 ? t('r_solid') : t('r_more');
+    app.innerHTML = '<div class="res"><p class="label">' + esc(t('finished')) + '</p><p class="big">' + esc(o.big) + '</p><p class="sub">' + esc(o.sub) + '</p><p class="msg2">' + msg + '</p>' +
+      '<div class="row">' + (o.retry ? '<button class="btn primary" id="retry">' + esc(t('retry')) + '</button>' : '') +
+      '<button class="btn ' + (o.retry ? 'ghost' : 'primary') + '" id="again">' + esc(t('again_go')) + '</button><button class="btn ghost" data-back>' + esc(t('back_lesson')) + '</button></div></div>';
     if (o.retry) $('#retry').onclick = o.retry;
     $('#again').onclick = o.again;
     window.scrollTo(0, 0);
@@ -879,20 +1172,20 @@ if (typeof module !== 'undefined') module.exports = Parser;
     function draw(){
       if (!q.length) {
         var first = total - againN;
-        return finish('cards', {big: first + ' / ' + total, sub: 'cards known on the first try', pct: first / total * 100, last: first + '/' + total, again: function(){ flash(deck); }});
+        return finish('cards', {big: first + ' / ' + total, sub: t('cards_known'), pct: first / total * 100, last: first + '/' + total, again: function(){ flash(deck); }});
       }
       var c = cards[q[0]];
       var front = rev ? c.back : c.front, back = rev ? c.front : c.back;
-      var lblQ = 'Question', lblA = 'Answer';
+      var lblQ = t('question'), lblA = t('answer');
       var talk = SPEECH && LOCALES[c.l] && !(rev && !flipped), noVoice = talk && !hasVoiceFor(c.l);
-      app.innerHTML = top(known, total, known + ' / ' + total + ' known') +
-        '<div class="fwrap"><button class="flash" id="flip" aria-label="' + (flipped ? lblA : lblQ) + '. Press to flip the card."><span class="side">' + (flipped ? lblA : lblQ) + '</span>' +
+      app.innerHTML = top(known, total, t('known', {k: known, n: total})) +
+        '<div class="fwrap"><button class="flash" id="flip" aria-label="' + esc(t('flip_aria', {s: flipped ? lblA : lblQ})) + '"><span class="side">' + (flipped ? lblA : lblQ) + '</span>' +
         '<span class="face ' + (flipped ? 'back' : '') + '">' + esc(flipped ? back : front) + '</span></button>' +
-        (talk && !noVoice ? '<button class="spk" id="spk" aria-label="Hear the phrase"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>' : '') + '</div>' +
-        (noVoice ? '<p class="hint">This device has no ' + LANG_NAME[c.l] + ' voice installed, so there is no sound for this lesson.</p>' : '') +
-        (flipped ? '<div class="row"><button class="btn ghost" id="again">Again</button><button class="btn primary" id="got">Got it</button></div>' : '<p class="hint">Tap the card to flip it.</p>') +
-        '<div class="links"><button class="link small" id="swap">' + (rev ? 'Show the question side first' : 'Show the answer side first') + '</button>' +
-        (talk && !noVoice ? '<button class="link small" id="slow" aria-pressed="' + SLOW + '">Slow voice: ' + (SLOW ? 'on' : 'off') + '</button>' : '') + '</div>';
+        (talk && !noVoice ? '<button class="spk" id="spk" aria-label="' + esc(t('hear')) + '"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>' : '') + '</div>' +
+        (noVoice ? '<p class="hint">' + esc(t('no_voice_card', {l: LN(c.l)})) + '</p>' : '') +
+        (flipped ? '<div class="row"><button class="btn ghost" id="again">' + esc(t('again')) + '</button><button class="btn primary" id="got">' + esc(t('got')) + '</button></div>' : '<p class="hint">' + esc(t('tap_flip')) + '</p>') +
+        '<div class="links"><button class="link small" id="swap">' + esc(rev ? t('show_q') : t('show_a')) + '</button>' +
+        (talk && !noVoice ? '<button class="link small" id="slow" aria-pressed="' + SLOW + '">' + esc(SLOW ? t('slow_on') : t('slow_off')) + '</button>' : '') + '</div>';
       $('#flip').onclick = function(){ flipped = !flipped; draw(); if (flipped && $('#got')) $('#got').focus(); };
       $('#swap').onclick = function(){ rev = !rev; flipped = false; draw(); };
       if ($('#spk')) $('#spk').onclick = function(){ speak(c.front, c.l); };
@@ -911,19 +1204,19 @@ if (typeof module !== 'undefined') module.exports = Parser;
     var items = list || sample(deck.items, 10).map(Parser.makeGap), n = items.length, i = 0, right = 0, wrong = [];
     function draw(){
       if (i >= n) {
-        return finish('gaps', {big: right + ' / ' + n, sub: 'sentences correct', pct: right / n * 100, last: right + '/' + n, save: !list,
+        return finish('gaps', {big: right + ' / ' + n, sub: t('sentences_ok'), pct: right / n * 100, last: right + '/' + n, save: !list,
           again: function(){ gaps(deck); }, retry: wrong.length ? function(){ gaps(deck, wrong); } : null});
       }
       var it = items[i], blanks = [], k = 0;
       var html = it.text.split(/\{\{(.+?)\}\}/g).map(function(p, idx){
         if (idx % 2 === 0) return esc(p);
         blanks.push(p); k++;
-        return '<input class="gap" type="text" style="width:' + Math.max(4, p.split('|')[0].length + 2) + 'ch" aria-label="Blank ' + k + '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">';
+        return '<input class="gap" type="text" style="width:' + Math.max(4, p.split('|')[0].length + 2) + 'ch" aria-label="' + esc(t('blank', {k: k})) + '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">';
       }).join('');
       app.innerHTML = top(i, n, (i + 1) + ' / ' + n) +
-        '<p class="label">' + (it.whole ? 'Type the phrase' : 'Fill in the gap') + '</p><p class="sentence">' + html + '</p>' +
+        '<p class="label">' + esc(it.whole ? t('type_phrase') : t('fill_gap')) + '</p><p class="sentence">' + html + '</p>' +
         (it.hint ? '<p class="hint">' + esc(it.hint) + '</p>' : '') +
-        '<div id="fb" role="status"></div><div class="row" id="act"><button class="btn primary" id="check">Check</button></div>';
+        '<div id="fb" role="status"></div><div class="row" id="act"><button class="btn primary" id="check">' + esc(t('check')) + '</button></div>';
       var ins = [].slice.call(app.querySelectorAll('input.gap')), checked = false;
       if (ins[0]) ins[0].focus();
       function doCheck(){
@@ -935,8 +1228,8 @@ if (typeof module !== 'undefined') module.exports = Parser;
           if (!good) { ok = false; inp.insertAdjacentHTML('afterend', '<span class="fix">' + esc(blanks[j].split('|')[0]) + '</span>'); }
         });
         if (ok) right++; else wrong.push(it);
-        $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + (ok ? 'Correct.' : 'Not quite.') + '</b> ' + (ok ? '' : 'The right answer is in green.') + '</div>';
-        $('#act').innerHTML = '<button class="btn primary" id="next">' + (i === n - 1 ? 'See results' : 'Next') + '</button>';
+        $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + esc(ok ? t('correct') : t('not_quite')) + '</b> ' + esc(ok ? '' : t('answer_green')) + '</div>';
+        $('#act').innerHTML = '<button class="btn primary" id="next">' + esc(i === n - 1 ? t('see_results') : t('next')) + '</button>';
         $('#next').onclick = function(){ i++; draw(); };
         $('#next').focus();
       }
@@ -952,7 +1245,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
     var items = list || Parser.makeQuiz(deck.items, 10), n = items.length, i = 0, right = 0, wrong = [];
     function draw(){
       if (i >= n) {
-        return finish('quiz', {big: right + ' / ' + n, sub: 'questions correct', pct: right / n * 100, last: right + '/' + n, save: !list,
+        return finish('quiz', {big: right + ' / ' + n, sub: t('questions_ok'), pct: right / n * 100, last: right + '/' + n, save: !list,
           again: function(){ quiz(deck); }, retry: wrong.length ? function(){ quiz(deck, wrong); } : null});
       }
       var it = items[i];
@@ -969,8 +1262,8 @@ if (typeof module !== 'undefined') module.exports = Parser;
             if (o.c) b.classList.add('right'); else if (b === btn) b.classList.add('wrong'); else b.classList.add('dim');
           });
           if (ok) right++; else wrong.push(it);
-          $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + (ok ? 'Correct.' : 'Not quite.') + '</b> ' + (it.explain ? esc(it.explain) : '') + '</div>';
-          $('#act').innerHTML = '<button class="btn primary" id="next">' + (i === n - 1 ? 'See results' : 'Next') + '</button>';
+          $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + esc(ok ? t('correct') : t('not_quite')) + '</b> ' + (it.explain ? esc(it.explain) : '') + '</div>';
+          $('#act').innerHTML = '<button class="btn primary" id="next">' + esc(i === n - 1 ? t('see_results') : t('next')) + '</button>';
           $('#next').onclick = function(){ i++; draw(); };
           $('#next').focus();
         };
@@ -989,13 +1282,13 @@ if (typeof module !== 'undefined') module.exports = Parser;
     var r = 0, slips = 0, total = pairs.length, doneTotal = 0;
     function draw(){
       if (r >= rounds.length) {
-        var pct = total / (total + slips) * 100, s2 = slips === 0 ? 'No slips' : slips + (slips === 1 ? ' slip' : ' slips');
-        return finish('match', {big: s2, sub: total + ' pairs matched', pct: pct, last: s2, again: function(){ match(deck); }});
+        var pct = total / (total + slips) * 100, s2 = slips === 0 ? t('no_slips') : plural(slips, 'slip');
+        return finish('match', {big: s2, sub: t('pairs_matched', {n: total}), pct: pct, last: s2, again: function(){ match(deck); }});
       }
       var round = rounds[r], left = shuffle(round), right = shuffle(round), sel = null, matched = 0;
-      function label(){ return 'Round ' + (r + 1) + ' of ' + rounds.length + ' · ' + slips + (slips === 1 ? ' slip' : ' slips'); }
+      function label(){ return t('round_of', {r: r + 1, m: rounds.length, s: plural(slips, 'slip')}); }
       app.innerHTML = top(doneTotal, total, label()) +
-        '<p class="label">Tap one on the left, then its partner on the right</p><div class="cols">' +
+        '<p class="label">' + esc(t('match_help')) + '</p><div class="cols">' +
         '<div class="col">' + left.map(function(p){ return '<button class="chip" data-side="a" data-id="' + p.id + '">' + esc(p.a) + '</button>'; }).join('') + '</div>' +
         '<div class="col">' + right.map(function(p){ return '<button class="chip" data-side="b" data-id="' + p.id + '">' + esc(p.b) + '</button>'; }).join('') + '</div></div>';
       [].forEach.call(app.querySelectorAll('.chip'), function(chip){
