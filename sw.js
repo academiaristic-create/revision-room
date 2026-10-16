@@ -1,11 +1,13 @@
 /* Revision Room service worker: offline copy of the app, plus the Android "Share to app" receiver. */
-const VERSION = 'rr-v3';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'pdf.min.js', 'pdf.worker.min.js',
+const VERSION = 'rr-v6';
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'pdf.min.js', 'pdf.worker.min.js', 'config.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 const KEEP = [VERSION, 'rr-shared', 'rr-fonts'];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(VERSION).then(function (c) {
+    return Promise.all(SHELL.map(function (u) { return c.add(new Request(u, {cache: 'reload'})); }));
+  }).then(function () { return self.skipWaiting(); }));
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {
@@ -16,7 +18,7 @@ self.addEventListener('activate', function (e) {
 async function swr(req, cacheName) {
   const c = await caches.open(cacheName);
   const hit = await c.match(req);
-  const net = fetch(req).then(function (r) { if (r && (r.ok || r.type === 'opaque')) c.put(req, r.clone()); return r; }).catch(function () { return null; });
+  const net = fetch(req, {cache: 'no-cache'}).then(function (r) { if (r && (r.ok || r.type === 'opaque')) c.put(req, r.clone()); return r; }).catch(function () { return null; });
   return hit || (await net) || Response.error();
 }
 

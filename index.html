@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Revision Room">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="config.js"></script>
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 <title>Revision Room</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -83,6 +84,14 @@ h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:7
 .mini table{border-collapse:collapse;width:100%;font-size:15px;background:var(--surface)}
 .mini th,.mini td{border:1px solid var(--line);padding:7px 12px;text-align:left}
 .mini th{color:var(--muted);font-weight:600;font-size:13px}
+.pick{margin-top:22px}
+.pick .seg{margin-top:8px}
+.hint{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.fb{display:grid;gap:14px;margin-top:18px}
+.fb label{display:grid;gap:6px;font-size:14px;font-weight:600}
+.fb input,.fb textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
+.fb textarea{min-height:140px;resize:vertical}
+.fb .trap{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .foot{margin:28px 0 0;font-size:13px;color:var(--muted)}
 
 /* tiles */
@@ -157,6 +166,16 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 /* results */
 .res .big{font:700 clamp(56px,16vw,84px)/1 var(--display);letter-spacing:-.03em;margin:4px 0 6px;font-variant-numeric:tabular-nums}
 .res .msg2{font:700 22px/1.2 var(--display);margin:18px 0 0}
+
+/* audio */
+.fwrap{position:relative}
+.spk{position:absolute;top:10px;right:10px;width:46px;height:46px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--accent);cursor:pointer}
+.spk:hover{border-color:var(--accent)}
+.links{display:flex;gap:0 22px;flex-wrap:wrap}
+.voice{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-top:18px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.segb{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:500;cursor:pointer}
+.segb.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 
 /* reader */
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:6px;margin-bottom:10px;background:var(--bg)}
@@ -324,6 +343,18 @@ var Parser = (function () {
     return { items: dedupe(onlyVocab(items)) };
   }
 
+  /* ---------- Language of the left column: 'en', 'es' or 'ru' (a guess, the student can change it) ---------- */
+  var ES_W = new Set('el la los las un una unos unas de del al que por para con se su sus mi tu lo y es está estar ser tener hacer ir dar darse echar poner hay muy más pero como cuando donde'.split(' '));
+  var EN_W = new Set('the to of and in is be have it you for with on at up out off get take make not your my an by from that this are was'.split(' '));
+  function detectLang(items) {
+    var txt = items.slice(0, 60).map(function (i) { return i.a; }).join(' ');
+    var cyr = (txt.match(/[Ѐ-ӿ]/g) || []).length, lat = (txt.match(/[A-Za-zÀ-ſ]/g) || []).length;
+    if (cyr > lat) return 'ru';
+    var es = 2 * (txt.match(/[¿¡ñáéíóúü]/gi) || []).length, en = 0;
+    txt.toLowerCase().split(/[^a-záéíóúñü']+/).forEach(function (w) { if (ES_W.has(w)) es++; if (EN_W.has(w)) en++; });
+    return es > en ? 'es' : 'en';
+  }
+
   /* ---------- Exercise builders ---------- */
   function makeGap(item) {
     var a = item.a.replace(/\|/g, '/').replace(/[{}]/g, '');
@@ -354,7 +385,7 @@ var Parser = (function () {
     return out;
   }
 
-  return { parseMarkdown: parseMarkdown, parsePdf: parsePdf, makeGap: makeGap, makeQuiz: makeQuiz, shuffle: shuffle, sample: sample, dedupe: dedupe };
+  return { parseMarkdown: parseMarkdown, parsePdf: parsePdf, makeGap: makeGap, makeQuiz: makeQuiz, detectLang: detectLang, shuffle: shuffle, sample: sample, dedupe: dedupe };
 })();
 if (typeof module !== 'undefined') module.exports = Parser;
 
@@ -365,10 +396,12 @@ if (typeof module !== 'undefined') module.exports = Parser;
   var LIB_KEY = 'revision-room:library:v1';
   var S = {lessons: [], last: {}};
   var IS_PWA = true;
+  var VERSION_LABEL = '6, 16 Oct';
+  var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
   try {
     var raw = localStorage.getItem(LIB_KEY);
-    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; } }
+    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; } }
   } catch (e) { canSave = false; }
   function persist(){ try { localStorage.setItem(LIB_KEY, JSON.stringify(S)); canSave = true; } catch (e) { canSave = false; } }
 
@@ -400,6 +433,41 @@ if (typeof module !== 'undefined') module.exports = Parser;
   function getFile(id){ return dbReq('readonly', function(st){ return st.get(id); }); }
   function delFile(id){ delete have[id]; return dbReq('readwrite', function(st){ return st.delete(id); }); }
   function loadKeys(){ return dbReq('readonly', function(st){ return st.getAllKeys(); }).then(function(k){ have = {}; if (Array.isArray(k)) k.forEach(function(x){ have[x] = 1; }); }); }
+
+  /* ---------- voices: the phone's own text-to-speech ---------- */
+  var SPEECH = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
+  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru']};
+  var LANG_NAME = {en: 'English', es: 'Spanish', ru: 'Russian'};
+  var SLOW = false;
+  try { SLOW = localStorage.getItem('revision-room:slow') === '1'; } catch (e) {}
+  function allVoices(){ try { return speechSynthesis.getVoices() || []; } catch (e) { return []; } }
+  function pickVoice(lg){
+    var vs = allVoices(), prefs = LOCALES[lg] || [];
+    for (var i = 0; i < prefs.length; i++) {
+      var p = prefs[i].toLowerCase();
+      var m = vs.filter(function(v){ var l = String(v.lang || '').replace('_', '-').toLowerCase(); return p.length === 2 ? l.slice(0, 2) === p : l === p; });
+      if (m.length) { var good = m.filter(function(v){ return /google|siri|enhanced|premium|natural|neural/i.test(v.name); }); return good[0] || m[0]; }
+    }
+    return null;
+  }
+  function hasVoiceFor(lg){ return !allVoices().length || !!pickVoice(lg); }
+  function speakable(t){
+    var x = String(t).replace(/\(([^)]*)\)/g, ' ').replace(/\bsth\b|\bsmth\b/gi, 'something').replace(/\bsb\b|\bsmb\b/gi, 'somebody').replace(/\//g, ' or ').replace(/\s+/g, ' ').trim();
+    return x || String(t).trim();
+  }
+  function stopSpeech(){ if (SPEECH) { try { speechSynthesis.cancel(); } catch (e) {} } }
+  function speak(text, lg){
+    if (!SPEECH || !LOCALES[lg]) return;
+    var t = speakable(text); if (!t) return;
+    try {
+      stopSpeech();
+      var u = new SpeechSynthesisUtterance(t), v = pickVoice(lg);
+      u.lang = v ? v.lang : LOCALES[lg][0];
+      if (v) u.voice = v;
+      u.rate = SLOW ? 0.6 : 0.95;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
 
   if (window.pdfjsLib) { try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js'; } catch (e) {} }
 
@@ -462,8 +530,11 @@ if (typeof module !== 'undefined') module.exports = Parser;
   /* ---------- navigation ---------- */
   app.addEventListener('click', function(e){
     var t;
-    if (e.target.closest('[data-back]')) { if (cur) menu(cur); else library(); return; }
-    if (e.target.closest('[data-lib]')) { library(); return; }
+    if (e.target.closest('[data-back]')) { stopSpeech(); if (cur) menu(cur); else library(); return; }
+    if (e.target.closest('[data-lib]')) { stopSpeech(); library(); return; }
+    if ((t = e.target.closest('[data-lang]'))) { setLang(t.dataset.lang); return; }
+    if ((t = e.target.closest('[data-addlang]'))) { S.addLang = t.dataset.addlang; persist(); [].forEach.call(app.querySelectorAll('[data-addlang]'), function(b){ var on = b.dataset.addlang === S.addLang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return; }
+    if (e.target.closest('[data-feedback]')) { feedback(); return; }
     if ((t = e.target.closest('[data-mode]'))) { run(t.dataset.mode); return; }
     if ((t = e.target.closest('[data-open]'))) { openLesson(t.dataset.open); return; }
     if ((t = e.target.closest('[data-read]'))) { reader(t.dataset.read); return; }
@@ -471,14 +542,25 @@ if (typeof module !== 'undefined') module.exports = Parser;
     if (e.target.closest('#sample')) { var sid = addLesson('Sample lesson', Parser.parseMarkdown(SAMPLE)); putFile(sid, {type: 'md', name: 'Sample lesson.md', text: SAMPLE}); notice = {kind: 'good', text: 'Added “Sample lesson”. Remove it any time.'}; library(); }
   });
 
+  function lessonLang(l){ return l.lang || 'en'; }
+  function withLang(l){ var lg = lessonLang(l); return l.items.map(function(it){ return {a: it.a, b: it.b, l: lg}; }); }
   function deckOf(id){
     if (id === '*') {
       var items = [];
-      S.lessons.forEach(function(l){ items = items.concat(l.items); });
+      S.lessons.forEach(function(l){ items = items.concat(withLang(l)); });
       return {id: '*', title: 'All lessons mixed', items: Parser.dedupe(items)};
     }
     var l = S.lessons.filter(function(x){ return x.id === id; })[0];
-    return l ? {id: l.id, title: l.title, items: l.items} : null;
+    return l ? {id: l.id, title: l.title, items: withLang(l), lang: lessonLang(l)} : null;
+  }
+  function addLang(){ return LOCALES[S.addLang] ? S.addLang : 'en'; }
+  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский'};
+  function setLang(lg){
+    var l = cur && S.lessons.filter(function(x){ return x.id === cur.id; })[0];
+    if (!l || (lg !== 'off' && !LOCALES[lg])) return;
+    l.lang = lg; l.langSet = true; persist();
+    var d = deckOf(l.id); menu(d);
+    if (lg !== 'off' && l.items.length) speak(l.items[0].a, lg);
   }
   function openLesson(id){ var d = deckOf(id); if (d) menu(d); }
 
@@ -492,6 +574,35 @@ if (typeof module !== 'undefined') module.exports = Parser;
     setTimeout(function(){ if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.textContent = 'Remove'; } }, 3000);
   }
 
+  /* ---------- feedback (Web3Forms -> teacher's email) ---------- */
+  function feedback(){
+    app.innerHTML = '<div class="bar"><button class="link" data-back>\u2190 Back</button></div><header><h1><span class="hl">Feedback</span></h1><p class="sub">Something confusing, broken or missing? Tell me and I will read it.</p></header>' +
+      '<form class="fb" id="fbf" novalidate><label>Your message<textarea id="fbm" maxlength="3000" required></textarea></label>' +
+      '<label>Your name (optional)<input id="fbn" maxlength="80" autocomplete="name"></label>' +
+      '<label>Your email, if you want a reply (optional)<input id="fbe" type="email" maxlength="120" autocomplete="email"></label>' +
+      '<div class="trap" aria-hidden="true"><label>Leave empty<input id="fbt" tabindex="-1" autocomplete="off"></label></div>' +
+      '<div id="fbs" class="msg" role="status"></div><div class="row"><button class="btn primary" id="fbsend" type="submit">Send</button></div></form>';
+    window.scrollTo(0, 0);
+    var form = $('#fbf'), st = $('#fbs'), btn = $('#fbsend');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var m = $('#fbm').value.trim();
+      if (!m) { st.className = 'msg bad'; st.textContent = 'Write a message first.'; return; }
+      if ($('#fbt').value) { st.className = 'msg good'; st.textContent = 'Thank you, sent.'; form.querySelector('#fbm').value = ''; return; }
+      var mail = $('#fbe').value.trim(), nm = $('#fbn').value.trim();
+      var payload = {access_key: FB_KEY, subject: 'Revision Room feedback' + (nm ? ' from ' + nm : ''), from_name: 'Revision Room', name: nm || 'Anonymous',
+        message: m + '\n\n---\nApp version ' + VERSION_LABEL + ' | lessons: ' + S.lessons.length + ' | ' + (navigator.userAgent || '')};
+      if (mail) { payload.email = mail; payload.replyto = mail; }
+      btn.disabled = true; st.className = 'msg'; st.textContent = 'Sending\u2026';
+      fetch('https://api.web3forms.com/submit', {method: 'POST', headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}, body: JSON.stringify(payload)})
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {ok: r.ok && j.success !== false, j: j}; }); })
+        .then(function(o){
+          if (o.ok) { st.className = 'msg good'; st.textContent = 'Thank you, sent.'; $('#fbm').value = ''; btn.disabled = false; }
+          else { st.className = 'msg bad'; st.textContent = 'Could not send' + (o.j && o.j.message ? ': ' + o.j.message : '.') + ' Your text is still here, try again.'; btn.disabled = false; }
+        }, function(){ st.className = 'msg bad'; st.textContent = 'No connection. Your text is still here, try again when you are online.'; btn.disabled = false; });
+    });
+  }
+
   /* ---------- library ---------- */
   function fmtDate(ts){ try { return new Date(ts).toLocaleDateString('en-GB', {day: 'numeric', month: 'short'}); } catch (e) { return ''; } }
   function library(){
@@ -499,6 +610,9 @@ if (typeof module !== 'undefined') module.exports = Parser;
     var ls = S.lessons, html =
       '<header><p class="eyebrow"><span>Revision Room</span></p><h1><span class="hl">Your lessons</span></h1>' +
       '<p class="sub">Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.</p></header>' +
+      '<div class="pick"><span class="label" style="margin:0">Language of the notes</span><div class="seg" role="group" aria-label="Language of the notes">' +
+        ['en', 'es', 'ru'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
+        '</div><p class="hint">The language of the left column, the one you want to learn. It sets the voice. Pick it before you add a file.</p></div>' +
       '<label class="drop" id="drop" for="file"><span class="dt">Add lesson notes</span><span class="dd">Choose PDF or .md files, or drop them here</span></label>' +
       '<input class="vh" type="file" id="file" multiple accept=".pdf,.md,.markdown,.txt,application/pdf,text/markdown,text/plain">' +
       '<div id="msg" class="msg ' + (notice ? notice.kind : '') + '" role="status">' + (notice ? esc(notice.text) : '') + '</div>' +
@@ -510,7 +624,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
         html += '<li class="lesson"><div class="lm"><b class="lt">All lessons mixed</b><span class="lc">' + plural(tot.items.length, 'chunk') + ' from ' + ls.length + ' lessons</span></div><div class="la"><button class="btn primary sm" data-open="*">Practise</button></div></li>';
       }
       ls.forEach(function(l){
-        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + plural(l.items.length, 'chunk') + ' · added ' + esc(fmtDate(l.added)) + '</span></div>' +
+        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + (l.lang && LANG_NAMES[l.lang] ? LANG_NAMES[l.lang] + ' · ' : '') + plural(l.items.length, 'chunk') + ' · added ' + esc(fmtDate(l.added)) + '</span></div>' +
           '<div class="la">' + (have[l.id] ? '<button class="btn ghost sm" data-read="' + esc(l.id) + '">Read</button>' : '') + '<button class="btn primary sm" data-open="' + esc(l.id) + '">Practise</button><button class="btn ghost sm" data-del="' + esc(l.id) + '">Remove</button></div></li>';
       });
       html += '</ul></section>';
@@ -521,7 +635,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
         '<tr><td>to make up your mind</td><td>принять решение</td></tr><tr><td>sooner or later</td><td>рано или поздно</td></tr><tr><td>to keep an eye on</td><td>присматривать за</td></tr></tbody></table></div>' +
         '<button class="btn ghost" id="sample" style="flex:none">Try a sample lesson</button></section>';
     }
-    html += '<div id="install"></div><p class="foot">Lessons are stored on this device only, so a phone and a laptop each keep their own list.</p>';
+    html += '<div id="install"></div>' + (FB_KEY ? '<div class="row" style="margin-top:26px"><button class="btn ghost sm" data-feedback>Send feedback</button></div>' : '') + '<p class="foot">Lessons are stored on this device only, so a phone and a laptop each keep their own list. App version ' + VERSION_LABEL + '.</p>';
     app.innerHTML = html;
     notice = null;
     installHint();
@@ -562,8 +676,8 @@ if (typeof module !== 'undefined') module.exports = Parser;
   function addLesson(title, r){
     var ex = S.lessons.filter(function(l){ return l.title.toLowerCase() === title.toLowerCase(); })[0];
     var id;
-    if (ex) { ex.items = r.items; delete ex.rules; ex.added = Date.now(); id = ex.id; }
-    else { id = uid(); S.lessons.unshift({id: id, title: title, added: Date.now(), items: r.items}); }
+    if (ex) { ex.items = r.items; delete ex.rules; ex.added = Date.now(); id = ex.id; if (!ex.langSet) ex.lang = addLang(); }
+    else { id = uid(); S.lessons.unshift({id: id, title: title, added: Date.now(), items: r.items, lang: addLang()}); }
     persist();
     return id;
   }
@@ -704,6 +818,8 @@ if (typeof module !== 'undefined') module.exports = Parser;
       '<header><p class="eyebrow"><span>' + plural(deck.items.length, 'chunk') + '</span></p>' +
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
       (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">Read the notes first</button></div>' : '') +
+      (SPEECH && deck.id !== '*' ? '<div class="voice"><span class="label" style="margin:0">Voice</span><div class="seg" role="group" aria-label="Voice language">' +
+        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['off', 'Off']].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' : '') +
       '<div class="tiles">' + MODES.map(function(m){
         var n = deck.items.length, off = n < m.min;
         return '<button class="tile" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + m.name + '</span><span class="tc">' + (off ? 'Needs more chunks' : m.count(deck)) + '</span>' +
@@ -714,6 +830,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
   function run(id){ if (id === 'cards') flash(cur); else if (id === 'gaps') gaps(cur); else if (id === 'quiz') quiz(cur); else if (id === 'match') match(cur); }
 
   function finish(id, o){
+    stopSpeech();
     if (o.save !== false) { S.last[cur.id] = S.last[cur.id] || {}; S.last[cur.id][id] = o.last; persist(); }
     var msg = o.pct >= 90 ? 'Clean run.' : o.pct >= 60 ? 'Solid. A few to revisit.' : 'Worth another pass.';
     app.innerHTML = '<div class="res"><p class="label">Finished</p><p class="big">' + esc(o.big) + '</p><p class="sub">' + esc(o.sub) + '</p><p class="msg2">' + msg + '</p>' +
@@ -726,7 +843,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
 
   /* ---------- Flashcards ---------- */
   function flash(deck){
-    var cards = deck.items.map(function(it){ return {front: it.a, back: it.b}; });
+    var cards = deck.items.map(function(it){ return {front: it.a, back: it.b, l: it.l}; });
     var total = cards.length, q = shuffle(cards.map(function(_, i){ return i; }));
     var known = 0, rev = false, flipped = false, again = {}, againN = 0;
     function draw(){
@@ -737,13 +854,19 @@ if (typeof module !== 'undefined') module.exports = Parser;
       var c = cards[q[0]];
       var front = rev ? c.back : c.front, back = rev ? c.front : c.back;
       var lblQ = 'Question', lblA = 'Answer';
+      var talk = SPEECH && LOCALES[c.l] && !(rev && !flipped), noVoice = talk && !hasVoiceFor(c.l);
       app.innerHTML = top(known, total, known + ' / ' + total + ' known') +
-        '<button class="flash" id="flip" aria-label="' + (flipped ? lblA : lblQ) + '. Press to flip the card."><span class="side">' + (flipped ? lblA : lblQ) + '</span>' +
+        '<div class="fwrap"><button class="flash" id="flip" aria-label="' + (flipped ? lblA : lblQ) + '. Press to flip the card."><span class="side">' + (flipped ? lblA : lblQ) + '</span>' +
         '<span class="face ' + (flipped ? 'back' : '') + '">' + esc(flipped ? back : front) + '</span></button>' +
+        (talk && !noVoice ? '<button class="spk" id="spk" aria-label="Hear the phrase"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>' : '') + '</div>' +
+        (noVoice ? '<p class="hint">This device has no ' + LANG_NAME[c.l] + ' voice installed, so there is no sound for this lesson.</p>' : '') +
         (flipped ? '<div class="row"><button class="btn ghost" id="again">Again</button><button class="btn primary" id="got">Got it</button></div>' : '<p class="hint">Tap the card to flip it.</p>') +
-        '<button class="link small" id="swap">' + (rev ? 'Show the question side first' : 'Show the answer side first') + '</button>';
+        '<div class="links"><button class="link small" id="swap">' + (rev ? 'Show the question side first' : 'Show the answer side first') + '</button>' +
+        (talk && !noVoice ? '<button class="link small" id="slow" aria-pressed="' + SLOW + '">Slow voice: ' + (SLOW ? 'on' : 'off') + '</button>' : '') + '</div>';
       $('#flip').onclick = function(){ flipped = !flipped; draw(); if (flipped && $('#got')) $('#got').focus(); };
       $('#swap').onclick = function(){ rev = !rev; flipped = false; draw(); };
+      if ($('#spk')) $('#spk').onclick = function(){ speak(c.front, c.l); };
+      if ($('#slow')) $('#slow').onclick = function(){ SLOW = !SLOW; try { localStorage.setItem('revision-room:slow', SLOW ? '1' : '0'); } catch (e) {} draw(); speak(c.front, c.l); };
       if (flipped) {
         $('#got').onclick = function(){ q.shift(); known++; flipped = false; draw(); };
         $('#again').onclick = function(){ if (!again[q[0]]) { again[q[0]] = 1; againN++; } q.push(q.shift()); flipped = false; draw(); };
