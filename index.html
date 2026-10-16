@@ -398,8 +398,9 @@ if (typeof module !== 'undefined') module.exports = Parser;
   var LIB_KEY = 'revision-room:library:v1';
   var S = {lessons: [], last: {}};
   var IS_PWA = true;
-  var VERSION_LABEL = '7, 16 Oct';
+  var VERSION_LABEL = '8, 16 Oct';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
+  var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
   try {
     var raw = localStorage.getItem(LIB_KEY);
@@ -552,7 +553,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
     if (e.target.closest('[data-lib]')) { stopSpeech(); library(); return; }
     if ((t = e.target.closest('[data-lang]'))) { setLang(t.dataset.lang); return; }
     if ((t = e.target.closest('[data-addlang]'))) { S.addLang = t.dataset.addlang; persist(); [].forEach.call(app.querySelectorAll('[data-addlang]'), function(b){ var on = b.dataset.addlang === S.addLang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return; }
-    if (e.target.closest('[data-feedback]')) { feedback(); return; }
+    if (e.target.closest('[data-feedback]')) { if (FB_URL) window.open(FB_URL, '_blank', 'noopener'); else feedback(); return; }
     if ((t = e.target.closest('[data-mode]'))) { run(t.dataset.mode); return; }
     if ((t = e.target.closest('[data-open]'))) { openLesson(t.dataset.open); return; }
     if ((t = e.target.closest('[data-read]'))) { reader(t.dataset.read); return; }
@@ -653,7 +654,7 @@ if (typeof module !== 'undefined') module.exports = Parser;
         '<tr><td>to make up your mind</td><td>принять решение</td></tr><tr><td>sooner or later</td><td>рано или поздно</td></tr><tr><td>to keep an eye on</td><td>присматривать за</td></tr></tbody></table></div>' +
         '<button class="btn ghost" id="sample" style="flex:none">Try a sample lesson</button></section>';
     }
-    html += '<div id="install"></div>' + (FB_KEY ? '<div class="row" style="margin-top:26px"><button class="btn ghost sm" data-feedback>Send feedback</button></div>' : '') + '<p class="foot">Lessons are stored on this device only, so a phone and a laptop each keep their own list. App version ' + VERSION_LABEL + '.</p>';
+    html += '<div id="install"></div>' + ((FB_KEY || FB_URL) ? '<div class="row" style="margin-top:26px"><button class="btn ghost sm" data-feedback>Send feedback</button></div>' : '') + '<p class="foot">Lessons are stored on this device only, so a phone and a laptop each keep their own list. App version ' + VERSION_LABEL + '.</p>';
     app.innerHTML = html;
     notice = null;
     installHint();
