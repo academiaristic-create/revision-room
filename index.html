@@ -77,6 +77,13 @@ h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:7
 .lc{color:var(--muted);font-size:14px}
 .la{display:flex;flex-wrap:wrap;gap:8px;flex:none}
 .sec{margin-top:30px}
+.mon{margin-top:14px}
+.mon>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:46px;padding:0 4px;cursor:pointer;font:700 18px var(--display);letter-spacing:-.01em}
+.mon>summary::-webkit-details-marker{display:none}
+.mon>summary::after{content:'';flex:none;width:9px;height:9px;margin-left:4px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .15s}
+.mon[open]>summary::after{transform:rotate(-135deg)}
+.mon .mc{margin-left:auto;font:500 14px var(--body);color:var(--muted)}
+.mon>.lessons{margin-top:6px}
 .how{margin-top:30px}
 .how h2{font-size:21px;margin:0 0 6px}
 .how p{margin:0 0 14px;color:var(--muted);max-width:56ch}
@@ -84,6 +91,7 @@ h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:7
 .mini table{border-collapse:collapse;width:100%;font-size:15px;background:var(--surface)}
 .mini th,.mini td{border:1px solid var(--line);padding:7px 12px;text-align:left}
 .mini th{color:var(--muted);font-weight:600;font-size:13px}
+.uisel{margin-left:auto;min-height:34px;padding:0 26px 0 10px;font:600 13px var(--body);letter-spacing:0;text-transform:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;cursor:pointer}
 .pick{margin-top:22px}
 .pick .seg{margin-top:8px}
 .hint{margin:8px 0 0;font-size:13px;color:var(--muted)}
@@ -405,6 +413,8 @@ if (typeof module !== 'undefined') module.exports = Parser;
 var I18N = {
   en: {
     ui_name: 'English',
+    'pl.lessonN': {one: 'lesson', other: 'lessons'},
+    practise_month: 'Practise all of {m}',
     m_listen: 'Listening', needs_voice: 'Needs a voice on this device', listen_label: 'Listen and type what you hear', show_meaning: 'Show the meaning', heard_ok: 'phrases heard correctly', l_accents: 'Right, but check the spelling: {x}', l_answer: 'It was: {x}',
     tricky: 'Tricky chunks', tricky_sub: '{c} · get one right 3 times in a row and it leaves the list',
     your_lessons: 'Your lessons',
@@ -460,6 +470,8 @@ var I18N = {
   },
   ru: {
     ui_name: 'Русский',
+    'pl.lessonN': {one: 'урок', few: 'урока', many: 'уроков', other: 'урока'},
+    practise_month: 'Учить всё: {m}',
     m_listen: 'Аудирование', needs_voice: 'Нужен голос на устройстве', listen_label: 'Послушайте и напишите, что услышали', show_meaning: 'Показать значение', heard_ok: 'фраз понято верно', l_accents: 'Верно, но проверьте написание: {x}', l_answer: 'Правильно: {x}',
     tricky: 'Трудные фразы', tricky_sub: '{c} · ответьте верно 3 раза подряд, и фраза уйдёт из списка',
     your_lessons: 'Ваши уроки',
@@ -516,6 +528,8 @@ var I18N = {
   },
   es: {
     ui_name: 'Español',
+    'pl.lessonN': {one: 'lección', other: 'lecciones'},
+    practise_month: 'Practicar todo: {m}',
     m_listen: 'Escucha', needs_voice: 'Hace falta una voz en el dispositivo', listen_label: 'Escucha y escribe lo que oyes', show_meaning: 'Mostrar el significado', heard_ok: 'frases entendidas correctamente', l_accents: 'Correcto, pero revisa la ortografía: {x}', l_answer: 'Era: {x}',
     tricky: 'Expresiones difíciles', tricky_sub: '{c} · acierta una 3 veces seguidas y sale de la lista',
     your_lessons: 'Tus lecciones',
@@ -571,6 +585,8 @@ var I18N = {
   },
   de: {
     ui_name: 'Deutsch',
+    'pl.lessonN': {one: 'Lektion', other: 'Lektionen'},
+    practise_month: 'Alles üben: {m}',
     m_listen: 'Hörverstehen', needs_voice: 'Braucht eine Stimme auf dem Gerät', listen_label: 'Hör zu und tipp, was du hörst', show_meaning: 'Bedeutung zeigen', heard_ok: 'Wendungen richtig verstanden', l_accents: 'Richtig, aber prüf die Schreibweise: {x}', l_answer: 'Es war: {x}',
     tricky: 'Knifflige Ausdrücke', tricky_sub: '{c} · 3-mal in Folge richtig, dann verschwindet er aus der Liste',
     your_lessons: 'Deine Lektionen',
@@ -626,6 +642,8 @@ var I18N = {
   },
   sr: {
     ui_name: 'Srpski',
+    'pl.lessonN': {one: 'lekcija', few: 'lekcije', other: 'lekcija'},
+    practise_month: 'Vežbaj sve: {m}',
     m_listen: 'Slušanje', needs_voice: 'Treba glas na uređaju', listen_label: 'Poslušaj i ukucaj šta čuješ', show_meaning: 'Prikaži značenje', heard_ok: 'izraza tačno čuto', l_accents: 'Tačno, ali proveri pravopis: {x}', l_answer: 'Bilo je: {x}',
     tricky: 'Teški izrazi', tricky_sub: '{c} · tačno tri puta zaredom i izraz izlazi sa liste',
     your_lessons: 'Tvoje lekcije',
@@ -706,13 +724,13 @@ var I18N = {
     return f[cat] || f.other;
   }
   Parser.t = t;
-  var VERSION_LABEL = '12, 20 Oct';
+  var VERSION_LABEL = '14, 20 Oct';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
   try {
     var raw = localStorage.getItem(LIB_KEY);
-    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; if (p.hard && typeof p.hard === 'object') S.hard = p.hard; } }
+    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; if (p.hard && typeof p.hard === 'object') S.hard = p.hard; if (p.fold && typeof p.fold === 'object') S.fold = p.fold; } }
   } catch (e) { canSave = false; }
   function persist(){ try { localStorage.setItem(LIB_KEY, JSON.stringify(S)); canSave = true; } catch (e) { canSave = false; } }
 
@@ -855,13 +873,16 @@ var I18N = {
   }
 
   /* ---------- navigation ---------- */
+  app.addEventListener('toggle', function(e){
+    var d = e.target; if (!d || !d.dataset || !d.dataset.mon) return;
+    (S.fold || (S.fold = {}))[d.dataset.mon] = d.open; persist();
+  }, true);
   app.addEventListener('click', function(e){
     var tg;
     if (e.target.closest('[data-back]')) { stopSpeech(); var bd = cur && deckOf(cur.id); if (bd) menu(bd); else library(); return; }
     if (e.target.closest('[data-lib]')) { stopSpeech(); library(); return; }
     if ((tg = e.target.closest('[data-lang]'))) { setLang(tg.dataset.lang); return; }
     if ((tg = e.target.closest('[data-addlang]'))) { S.addLang = tg.dataset.addlang; persist(); [].forEach.call(app.querySelectorAll('[data-addlang]'), function(b){ var on = b.dataset.addlang === S.addLang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return; }
-    if ((tg = e.target.closest('[data-ui]'))) { UI = tg.dataset.ui; try { localStorage.setItem('revision-room:ui', UI); } catch (x) {} document.documentElement.lang = UI; library(); return; }
     if (e.target.closest('[data-feedback]')) { if (FB_URL) window.open(FB_URL, '_blank', 'noopener'); else feedback(); return; }
     if ((tg = e.target.closest('[data-mode]'))) { run(tg.dataset.mode); return; }
     if ((tg = e.target.closest('[data-open]'))) { openLesson(tg.dataset.open); return; }
@@ -886,6 +907,12 @@ var I18N = {
   function withLang(l){ var lg = lessonLang(l); return l.items.map(function(it){ return {a: it.a, b: it.b, l: lg, i: l.id}; }); }
   function deckOf(id){
     if (id === '!') { var hi = hardItems(); return hi.length ? {id: '!', title: t('tricky'), items: hi} : null; }
+    if (id.slice(0, 2) === 'm:') {
+      var mk = id.slice(2), ml = S.lessons.filter(function(x){ return monthKey(lessonTime(x)) === mk; });
+      if (!ml.length) return null;
+      var mit = []; ml.forEach(function(x){ mit = mit.concat(withLang(x)); });
+      return {id: id, title: monthLabel(+mk.slice(0, 4), +mk.slice(5) - 1), items: Parser.dedupe(mit)};
+    }
     if (id === '*') {
       var items = [];
       S.lessons.forEach(function(l){ items = items.concat(withLang(l)); });
@@ -947,13 +974,43 @@ var I18N = {
   /* ---------- library ---------- */
   function fmtDate(ts){ try { return new Date(ts).toLocaleDateString('en-GB', {day: 'numeric', month: 'short'}); } catch (e) { return ''; } }
   function uiPicker(){
-    return '<div class="pick" style="margin-top:22px"><span class="label" style="margin:0">' + esc(t('app_lang')) + '</span><div class="seg" role="group" aria-label="' + esc(t('app_lang')) + '">' +
-      UIS.map(function(k){ return '<button class="segb' + (UI === k ? ' on' : '') + '" data-ui="' + k + '" aria-pressed="' + (UI === k) + '">' + I18N[k].ui_name + '</button>'; }).join('') + '</div></div>';
+    return '<select class="uisel" id="uisel" aria-label="' + esc(t('app_lang')) + '" title="' + esc(t('app_lang')) + '">' +
+      UIS.map(function(k){ return '<option value="' + k + '"' + (UI === k ? ' selected' : '') + '>' + I18N[k].ui_name + '</option>'; }).join('') + '</select>';
+  }
+  /* ---------- lessons grouped by month (date taken from the file name, else the day it was added) ---------- */
+  var MON = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11, ene:0,abr:3,ago:7,dic:11, 'm\u00e4r':2,mai:4,okt:9,dez:11,
+    '\u044f\u043d\u0432':0,'\u0444\u0435\u0432':1,'\u043c\u0430\u0440':2,'\u0430\u043f\u0440':3,'\u043c\u0430\u044f':4,'\u043c\u0430\u0439':4,'\u0438\u044e\u043d':5,'\u0438\u044e\u043b':6,'\u0430\u0432\u0433':7,'\u0441\u0435\u043d':8,'\u043e\u043a\u0442':9,'\u043d\u043e\u044f':10,'\u0434\u0435\u043a':11};
+  function validDate(y, m, d){ return y > 2000 && y < 2100 && m >= 0 && m < 12 && d >= 1 && d <= 31 ? new Date(y, m, d).getTime() : null; }
+  function lessonTime(l){
+    var s = String(l.title), m, v = null;
+    if ((m = /(\d{1,2})\s+(\p{L}{3})\p{L}*\.?,?\s+(\d{4})/u.exec(s)) && MON[m[2].toLowerCase()] != null) v = validDate(+m[3], MON[m[2].toLowerCase()], +m[1]);
+    if (v == null && (m = /(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})/.exec(s))) v = validDate(+m[1], +m[2] - 1, +m[3]);
+    if (v == null && (m = /(\d{1,2})[-.\/](\d{1,2})[-.\/](\d{4})/.exec(s))) v = validDate(+m[3], +m[2] - 1, +m[1]);
+    return v == null ? l.added : v;
+  }
+  var UI_LOCALE = {en: 'en-GB', ru: 'ru', es: 'es', de: 'de', sr: 'sr-Latn'};
+  function monthLabel(y, m){
+    var s; try { s = new Date(y, m, 1).toLocaleDateString(UI_LOCALE[UI] || 'en-GB', {month: 'long', year: 'numeric'}); } catch (e) { s = (m + 1) + '/' + y; }
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  function monthKey(ts){ var d = new Date(ts); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2); }
+  function monthGroups(ls){
+    var sorted = ls.slice().sort(function(x, y){ return lessonTime(y) - lessonTime(x); }), out = [], idx = {};
+    sorted.forEach(function(l){
+      var ts = lessonTime(l), k = monthKey(ts);
+      if (!(k in idx)) { var d = new Date(ts); idx[k] = out.length; out.push({key: k, label: monthLabel(d.getFullYear(), d.getMonth()), list: []}); }
+      out[idx[k]].list.push(l);
+    });
+    return out;
+  }
+  function lessonLi(l){
+    return '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + (l.lang && LANG_NAMES[l.lang] ? LANG_NAMES[l.lang] + ' · ' : '') + plural(l.items.length, 'chunk') + ' · ' + esc(t('added', {d: fmtDate(l.added)})) + '</span></div>' +
+          '<div class="la">' + (have[l.id] ? '<button class="btn ghost sm" data-read="' + esc(l.id) + '">' + esc(t('read')) + '</button>' : '') + '<button class="btn primary sm" data-open="' + esc(l.id) + '">' + esc(t('practise')) + '</button><button class="btn ghost sm" data-del="' + esc(l.id) + '">' + esc(t('remove')) + '</button></div></li>';
   }
   function library(){
     cur = null;
     var ls = S.lessons, html =
-      '<header><p class="eyebrow"><span>Revision Room</span></p><h1><span class="hl">' + esc(t('your_lessons')) + '</span></h1>' +
+      '<header><p class="eyebrow"><span>Revision Room</span>' + uiPicker() + '</p><h1><span class="hl">' + esc(t('your_lessons')) + '</span></h1>' +
       '<p class="sub">' + esc(t('sub')) + '</p></header>' +
       '<div class="pick"><span class="label" style="margin:0">' + esc(t('notes_lang')) + '</span><div class="seg" role="group" aria-label="' + esc(t('notes_lang')) + '">' +
         ['en', 'es', 'ru', 'de'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
@@ -970,11 +1027,21 @@ var I18N = {
         var tot = deckOf('*');
         html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(t('mixed')) + '</b><span class="lc">' + esc(t('mixed_sub', {c: plural(tot.items.length, 'chunk'), n: ls.length, w: word(ls.length, 'pl.lesson')})) + '</span></div><div class="la"><button class="btn primary sm" data-open="*">' + esc(t('practise')) + '</button></div></li>';
       }
-      ls.forEach(function(l){
-        html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(l.title) + '</b><span class="lc">' + (l.lang && LANG_NAMES[l.lang] ? LANG_NAMES[l.lang] + ' · ' : '') + plural(l.items.length, 'chunk') + ' · ' + esc(t('added', {d: fmtDate(l.added)})) + '</span></div>' +
-          '<div class="la">' + (have[l.id] ? '<button class="btn ghost sm" data-read="' + esc(l.id) + '">' + esc(t('read')) + '</button>' : '') + '<button class="btn primary sm" data-open="' + esc(l.id) + '">' + esc(t('practise')) + '</button><button class="btn ghost sm" data-del="' + esc(l.id) + '">' + esc(t('remove')) + '</button></div></li>';
-      });
-      html += '</ul></section>';
+      var groups = monthGroups(ls);
+      if (groups.length < 2) {
+        (groups[0] ? groups[0].list : []).forEach(function(l){ html += lessonLi(l); });
+        html += '</ul></section>';
+      } else {
+        html += '</ul>';
+        groups.forEach(function(g, gi){
+          var open = S.fold && g.key in S.fold ? !!S.fold[g.key] : gi === 0;
+          html += '<details class="mon" data-mon="' + g.key + '"' + (open ? ' open' : '') + '><summary><span class="mn">' + esc(g.label) + '</span><span class="mc">' + esc(plural(g.list.length, 'lessonN')) + '</span></summary><ul class="lessons">';
+          if (g.list.length > 1) html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(t('practise_month', {m: g.label})) + '</b></div><div class="la"><button class="btn primary sm" data-open="m:' + g.key + '">' + esc(t('practise')) + '</button></div></li>';
+          g.list.forEach(function(l){ html += lessonLi(l); });
+          html += '</ul></details>';
+        });
+        html += '</section>';
+      }
     } else {
       html += '<section class="how"><h2>' + esc(t('how_h')) + '</h2>' +
         '<p>' + esc(t('how_p')) + '</p>' +
@@ -982,7 +1049,7 @@ var I18N = {
         '<tr><td>to make up your mind</td><td>принять решение</td></tr><tr><td>sooner or later</td><td>рано или поздно</td></tr><tr><td>to keep an eye on</td><td>присматривать за</td></tr></tbody></table></div>' +
         '<button class="btn ghost" id="sample" style="flex:none">' + esc(t('sample_btn')) + '</button></section>';
     }
-    html += '<div id="install"></div>' + ((FB_KEY || FB_URL) ? '<div class="row" style="margin-top:26px"><button class="btn ghost sm" data-feedback>' + esc(t('feedback_btn')) + '</button></div>' : '') + uiPicker() + '<p class="foot">' + esc(t('foot', {v: VERSION_LABEL})) + '</p>';
+    html += '<div id="install"></div>' + ((FB_KEY || FB_URL) ? '<div class="row" style="margin-top:26px"><button class="btn ghost sm" data-feedback>' + esc(t('feedback_btn')) + '</button></div>' : '') + '<p class="foot">' + esc(t('foot', {v: VERSION_LABEL})) + '</p>';
     app.innerHTML = html;
     notice = null;
     installHint();
@@ -991,6 +1058,8 @@ var I18N = {
     ['dragenter', 'dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
     ['dragleave', 'drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
     drop.addEventListener('drop', function(e){ var f = [].slice.call(e.dataTransfer && e.dataTransfer.files || []); if (f.length) handleFiles(f); });
+    var us = $('#uisel');
+    if (us) us.onchange = function(){ UI = us.value; try { localStorage.setItem('revision-room:ui', UI); } catch (x) {} document.documentElement.lang = UI; library(); };
     window.scrollTo(0, 0);
   }
 
@@ -1165,7 +1234,7 @@ var I18N = {
       '<header><p class="eyebrow"><span>' + plural(deck.items.length, 'chunk') + '</span></p>' +
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
       (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">' + esc(t('read_first')) + '</button></div>' : '') +
-      (SPEECH && deck.id !== '*' && deck.id !== '!' ? '<div class="voice"><span class="label" style="margin:0">' + esc(t('speak_in')) + '</span><div class="seg" role="group" aria-label="' + esc(t('voice_lang')) + '">' +
+      (SPEECH && deck.id !== '*' && deck.id !== '!' && deck.id.slice(0, 2) !== 'm:' ? '<div class="voice"><span class="label" style="margin:0">' + esc(t('speak_in')) + '</span><div class="seg" role="group" aria-label="' + esc(t('voice_lang')) + '">' +
         [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['off', t('off')]].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
       '<div class="tiles">' + MODES.map(function(m){
         var ls = m.id === 'listen', n = ls ? listenItems(deck).length : deck.items.length, off = n < m.min;
