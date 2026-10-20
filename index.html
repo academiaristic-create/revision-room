@@ -171,6 +171,14 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 .fwrap{position:relative}
 .spk{position:absolute;top:10px;right:10px;width:46px;height:46px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--accent);cursor:pointer}
 .spk:hover{border-color:var(--accent)}
+.lwrap{display:grid;place-items:center;margin:22px 0 18px}
+.lspk{width:96px;height:96px;display:grid;place-items:center;border-radius:50%;border:2px solid var(--accent);background:var(--tint);color:var(--accent);cursor:pointer}
+.lspk:active{transform:scale(.96)}
+.lin{display:block;width:100%;min-height:54px;padding:0 14px;font:inherit;font-size:18px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.lin:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.lin.ok{background:var(--good-bg);border-color:transparent;color:var(--good)}
+.lin.no{background:var(--bad-bg);border-color:transparent;color:var(--bad)}
+.tile.wide{grid-column:1/-1;min-height:96px}
 .links{display:flex;gap:0 22px;flex-wrap:wrap}
 .vpick{display:flex;align-items:center;gap:10px;margin-top:12px}
 .vpick select{flex:1;min-width:0;min-height:42px;padding:0 10px;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px}
@@ -366,11 +374,11 @@ var Parser = (function () {
       var core = w.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
       if (core.length >= 3 && !STOP.has(core.toLowerCase().split("'")[0]) && !/[()\/\d]/.test(w)) cand.push(i);
     });
-    if (words.length < 2 || !cand.length) return { text: '{{' + a + '}}', hint: hint, whole: true };
+    if (words.length < 2 || !cand.length) return { text: '{{' + a + '}}', hint: hint, whole: true, src: item };
     var i = cand[Math.floor(Math.random() * cand.length)];
     var w = words[i], core = w.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
     words[i] = w.replace(core, '{{' + core + '}}');
-    return { text: words.join(' '), hint: hint, whole: false };
+    return { text: words.join(' '), hint: hint, whole: false, src: item };
   }
 
   function makeQuiz(items, n) {
@@ -382,7 +390,7 @@ var Parser = (function () {
       var d = [];
       shuffle(items).forEach(function (o) { var v = o[key], k = v.toLowerCase(); if (d.length < 3 && o !== it && !seen[k]) { seen[k] = 1; d.push(v); } });
       if (!d.length) return;
-      out.push({ q: q, options: [it[key]].concat(d), answer: 0, explain: '“' + it.a + '” = ' + it.b });
+      out.push({ q: q, options: [it[key]].concat(d), answer: 0, explain: '“' + it.a + '” = ' + it.b, src: it });
     });
     return out;
   }
@@ -397,6 +405,8 @@ if (typeof module !== 'undefined') module.exports = Parser;
 var I18N = {
   en: {
     ui_name: 'English',
+    m_listen: 'Listening', needs_voice: 'Needs a voice on this device', listen_label: 'Listen and type what you hear', show_meaning: 'Show the meaning', heard_ok: 'phrases heard correctly', l_accents: 'Right, but check the spelling: {x}', l_answer: 'It was: {x}',
+    tricky: 'Tricky chunks', tricky_sub: '{c} · get one right 3 times in a row and it leaves the list',
     your_lessons: 'Your lessons',
     sub: 'Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.',
     notes_lang: 'Language of the notes',
@@ -450,6 +460,8 @@ var I18N = {
   },
   ru: {
     ui_name: 'Русский',
+    m_listen: 'Аудирование', needs_voice: 'Нужен голос на устройстве', listen_label: 'Послушайте и напишите, что услышали', show_meaning: 'Показать значение', heard_ok: 'фраз понято верно', l_accents: 'Верно, но проверьте написание: {x}', l_answer: 'Правильно: {x}',
+    tricky: 'Трудные фразы', tricky_sub: '{c} · ответьте верно 3 раза подряд, и фраза уйдёт из списка',
     your_lessons: 'Ваши уроки',
     sub: 'Добавляйте заметки с каждого урока (PDF или Markdown). Фразы и лексика из них превращаются в карточки, упражнения с пропусками, тест и сопоставление.',
     notes_lang: 'Язык заметок',
@@ -504,6 +516,8 @@ var I18N = {
   },
   es: {
     ui_name: 'Español',
+    m_listen: 'Escucha', needs_voice: 'Hace falta una voz en el dispositivo', listen_label: 'Escucha y escribe lo que oyes', show_meaning: 'Mostrar el significado', heard_ok: 'frases entendidas correctamente', l_accents: 'Correcto, pero revisa la ortografía: {x}', l_answer: 'Era: {x}',
+    tricky: 'Expresiones difíciles', tricky_sub: '{c} · acierta una 3 veces seguidas y sale de la lista',
     your_lessons: 'Tus lecciones',
     sub: 'Añade los apuntes de cada clase (PDF o Markdown). Las expresiones y el vocabulario se convierten en tarjetas, huecos por rellenar, un test y emparejar.',
     notes_lang: 'Idioma de los apuntes',
@@ -557,6 +571,8 @@ var I18N = {
   },
   de: {
     ui_name: 'Deutsch',
+    m_listen: 'Hörverstehen', needs_voice: 'Braucht eine Stimme auf dem Gerät', listen_label: 'Hör zu und tipp, was du hörst', show_meaning: 'Bedeutung zeigen', heard_ok: 'Wendungen richtig verstanden', l_accents: 'Richtig, aber prüf die Schreibweise: {x}', l_answer: 'Es war: {x}',
+    tricky: 'Knifflige Ausdrücke', tricky_sub: '{c} · 3-mal in Folge richtig, dann verschwindet er aus der Liste',
     your_lessons: 'Deine Lektionen',
     sub: 'Füge die Notizen jeder Stunde hinzu (PDF oder Markdown). Aus den Wendungen und dem Wortschatz werden Karteikarten, Lückentexte, ein Quiz und Zuordnen.',
     notes_lang: 'Sprache der Notizen',
@@ -610,6 +626,8 @@ var I18N = {
   },
   sr: {
     ui_name: 'Srpski',
+    m_listen: 'Slušanje', needs_voice: 'Treba glas na uređaju', listen_label: 'Poslušaj i ukucaj šta čuješ', show_meaning: 'Prikaži značenje', heard_ok: 'izraza tačno čuto', l_accents: 'Tačno, ali proveri pravopis: {x}', l_answer: 'Bilo je: {x}',
+    tricky: 'Teški izrazi', tricky_sub: '{c} · tačno tri puta zaredom i izraz izlazi sa liste',
     your_lessons: 'Tvoje lekcije',
     sub: 'Dodaj beleške sa svakog časa (PDF ili Markdown). Izrazi i vokabular iz njih postaju kartice, popunjavanje praznina, kviz i spajanje.',
     notes_lang: 'Jezik beleški',
@@ -688,13 +706,13 @@ var I18N = {
     return f[cat] || f.other;
   }
   Parser.t = t;
-  var VERSION_LABEL = '10, 16 Oct';
+  var VERSION_LABEL = '12, 20 Oct';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
   try {
     var raw = localStorage.getItem(LIB_KEY);
-    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; } }
+    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; if (p.hard && typeof p.hard === 'object') S.hard = p.hard; } }
   } catch (e) { canSave = false; }
   function persist(){ try { localStorage.setItem(LIB_KEY, JSON.stringify(S)); canSave = true; } catch (e) { canSave = false; } }
 
@@ -839,7 +857,7 @@ var I18N = {
   /* ---------- navigation ---------- */
   app.addEventListener('click', function(e){
     var tg;
-    if (e.target.closest('[data-back]')) { stopSpeech(); if (cur) menu(cur); else library(); return; }
+    if (e.target.closest('[data-back]')) { stopSpeech(); var bd = cur && deckOf(cur.id); if (bd) menu(bd); else library(); return; }
     if (e.target.closest('[data-lib]')) { stopSpeech(); library(); return; }
     if ((tg = e.target.closest('[data-lang]'))) { setLang(tg.dataset.lang); return; }
     if ((tg = e.target.closest('[data-addlang]'))) { S.addLang = tg.dataset.addlang; persist(); [].forEach.call(app.querySelectorAll('[data-addlang]'), function(b){ var on = b.dataset.addlang === S.addLang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return; }
@@ -852,9 +870,22 @@ var I18N = {
     if (e.target.closest('#sample')) { var sid = addLesson('Sample lesson', Parser.parseMarkdown(SAMPLE)); putFile(sid, {type: 'md', name: 'Sample lesson.md', text: SAMPLE}); notice = {kind: 'good', text: t('sample_added')}; library(); }
   });
 
+  /* Tricky chunks: a miss puts a chunk on the list, three right in a row takes it off. Works across lessons. */
+  function track(it, ok){
+    if (!it || !it.a) return;
+    var h = S.hard || (S.hard = {}), k = (it.l || '') + '|' + it.a.toLowerCase(), e = h[k];
+    if (!ok) { if (!e) e = h[k] = {a: it.a, b: it.b, l: it.l, i: it.i, n: 0, s: 0}; e.n++; e.s = 0; if (it.i) e.i = it.i; }
+    else if (e) { e.s++; if (e.s >= 3) delete h[k]; }
+    persist();
+  }
+  function hardItems(){
+    var h = S.hard || {};
+    return Object.keys(h).map(function(k){ return h[k]; }).sort(function(x, y){ return y.n - x.n; }).map(function(e){ return {a: e.a, b: e.b, l: e.l, i: e.i}; });
+  }
   function lessonLang(l){ return l.lang || 'en'; }
-  function withLang(l){ var lg = lessonLang(l); return l.items.map(function(it){ return {a: it.a, b: it.b, l: lg}; }); }
+  function withLang(l){ var lg = lessonLang(l); return l.items.map(function(it){ return {a: it.a, b: it.b, l: lg, i: l.id}; }); }
   function deckOf(id){
+    if (id === '!') { var hi = hardItems(); return hi.length ? {id: '!', title: t('tricky'), items: hi} : null; }
     if (id === '*') {
       var items = [];
       S.lessons.forEach(function(l){ items = items.concat(withLang(l)); });
@@ -878,7 +909,7 @@ var I18N = {
     if (btn.dataset.armed) {
       var id = btn.dataset.del;
       S.lessons = S.lessons.filter(function(l){ return l.id !== id; });
-      delete S.last[id]; persist(); notice = null; delFile(id).then(library); return;
+      delete S.last[id]; Object.keys(S.hard || {}).forEach(function(k){ if (S.hard[k].i === id) delete S.hard[k]; }); persist(); notice = null; delFile(id).then(library); return;
     }
     btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = t('remove_again');
     setTimeout(function(){ if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.textContent = t('remove'); } }, 3000);
@@ -933,6 +964,8 @@ var I18N = {
       (canSave ? '' : '<p class="warn">' + esc(t('nosave')) + '</p>');
     if (ls.length) {
       html += '<section class="sec"><p class="label">' + esc(t('lessons')) + '</p><ul class="lessons">';
+      var hn = hardItems().length;
+      if (hn) html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(t('tricky')) + '</b><span class="lc">' + esc(t('tricky_sub', {c: plural(hn, 'chunk')})) + '</span></div><div class="la"><button class="btn primary sm" data-open="!">' + esc(t('practise')) + '</button></div></li>';
       if (ls.length > 1) {
         var tot = deckOf('*');
         html += '<li class="lesson"><div class="lm"><b class="lt">' + esc(t('mixed')) + '</b><span class="lc">' + esc(t('mixed_sub', {c: plural(tot.items.length, 'chunk'), n: ls.length, w: word(ls.length, 'pl.lesson')})) + '</span></div><div class="la"><button class="btn primary sm" data-open="*">' + esc(t('practise')) + '</button></div></li>';
@@ -1120,8 +1153,10 @@ var I18N = {
     {id: 'cards', name: 'm_cards', min: 1, count: function(d){ return plural(d.items.length, 'card'); }},
     {id: 'gaps',  name: 'm_gaps',  min: 1, count: function(d){ return t('per_round', {n: Math.min(10, d.items.length)}); }},
     {id: 'quiz',  name: 'm_quiz',  min: 2, count: function(d){ return t('per_round', {n: Math.min(10, d.items.length)}); }},
-    {id: 'match', name: 'm_match', min: 3, count: function(d){ return plural(Math.min(12, d.items.length), 'pair'); }}
+    {id: 'match', name: 'm_match', min: 3, count: function(d){ return plural(Math.min(12, d.items.length), 'pair'); }},
+    {id: 'listen', name: 'm_listen', min: 1, count: function(d){ return t('per_round', {n: Math.min(10, listenItems(d).length)}); }}
   ];
+  function listenItems(d){ return d.items.filter(function(it){ return SPEECH && LOCALES[it.l] && allVoices().length > 0 && !!pickVoice(it.l); }); }
   function menu(deck){
     cur = deck;
     var last = S.last[deck.id] || {};
@@ -1130,11 +1165,11 @@ var I18N = {
       '<header><p class="eyebrow"><span>' + plural(deck.items.length, 'chunk') + '</span></p>' +
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
       (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">' + esc(t('read_first')) + '</button></div>' : '') +
-      (SPEECH && deck.id !== '*' ? '<div class="voice"><span class="label" style="margin:0">' + esc(t('speak_in')) + '</span><div class="seg" role="group" aria-label="' + esc(t('voice_lang')) + '">' +
+      (SPEECH && deck.id !== '*' && deck.id !== '!' ? '<div class="voice"><span class="label" style="margin:0">' + esc(t('speak_in')) + '</span><div class="seg" role="group" aria-label="' + esc(t('voice_lang')) + '">' +
         [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['off', t('off')]].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
       '<div class="tiles">' + MODES.map(function(m){
-        var n = deck.items.length, off = n < m.min;
-        return '<button class="tile" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + esc(t(m.name)) + '</span><span class="tc">' + esc(off ? t('needs_more') : m.count(deck)) + '</span>' +
+        var ls = m.id === 'listen', n = ls ? listenItems(deck).length : deck.items.length, off = n < m.min;
+        return '<button class="tile' + (ls ? ' wide' : '') + '" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + esc(t(m.name)) + '</span><span class="tc">' + esc(off ? t(ls ? 'needs_voice' : 'needs_more') : m.count(deck)) + '</span>' +
           '<span class="tl">' + esc(last[m.id] ? t('last', {x: last[m.id]}) : t('not_tried')) + '</span></button>';
       }).join('') + '</div>';
     window.scrollTo(0, 0);
@@ -1149,8 +1184,8 @@ var I18N = {
       if (l && l.items.length) speak(l.items[0].a, deck.lang);
     };
   }
-  if (SPEECH) { try { speechSynthesis.addEventListener('voiceschanged', function(){ var b = document.getElementById('vbox'); if (b && cur && cur.lang && cur.lang !== 'off') { b.innerHTML = voiceSelect(cur.lang); bindVoiceSelect(cur); } }); } catch (e) {} }
-  function run(id){ if (id === 'cards') flash(cur); else if (id === 'gaps') gaps(cur); else if (id === 'quiz') quiz(cur); else if (id === 'match') match(cur); }
+  if (SPEECH) { try { speechSynthesis.addEventListener('voiceschanged', function(){ var b = document.getElementById('vbox'); if (b && cur && cur.lang && cur.lang !== 'off') { b.innerHTML = voiceSelect(cur.lang); bindVoiceSelect(cur); } if (cur && app.querySelector('.tiles')) { var fd = deckOf(cur.id); if (fd) menu(fd); } }); } catch (e) {} }
+  function run(id){ if (id === 'cards') flash(cur); else if (id === 'gaps') gaps(cur); else if (id === 'quiz') quiz(cur); else if (id === 'match') match(cur); else if (id === 'listen') listen(cur); }
 
   function finish(id, o){
     stopSpeech();
@@ -1166,7 +1201,7 @@ var I18N = {
 
   /* ---------- Flashcards ---------- */
   function flash(deck){
-    var cards = deck.items.map(function(it){ return {front: it.a, back: it.b, l: it.l}; });
+    var cards = deck.items.map(function(it){ return {front: it.a, back: it.b, l: it.l, src: it}; });
     var total = cards.length, q = shuffle(cards.map(function(_, i){ return i; }));
     var known = 0, rev = false, flipped = false, again = {}, againN = 0;
     function draw(){
@@ -1191,8 +1226,8 @@ var I18N = {
       if ($('#spk')) $('#spk').onclick = function(){ speak(c.front, c.l); };
       if ($('#slow')) $('#slow').onclick = function(){ SLOW = !SLOW; try { localStorage.setItem('revision-room:slow', SLOW ? '1' : '0'); } catch (e) {} draw(); speak(c.front, c.l); };
       if (flipped) {
-        $('#got').onclick = function(){ q.shift(); known++; flipped = false; draw(); };
-        $('#again').onclick = function(){ if (!again[q[0]]) { again[q[0]] = 1; againN++; } q.push(q.shift()); flipped = false; draw(); };
+        $('#got').onclick = function(){ track(c.src, true); q.shift(); known++; flipped = false; draw(); };
+        $('#again').onclick = function(){ track(c.src, false); if (!again[q[0]]) { again[q[0]] = 1; againN++; } q.push(q.shift()); flipped = false; draw(); };
       }
     }
     draw();
@@ -1227,6 +1262,7 @@ var I18N = {
           inp.readOnly = true; inp.classList.add(good ? 'ok' : 'no');
           if (!good) { ok = false; inp.insertAdjacentHTML('afterend', '<span class="fix">' + esc(blanks[j].split('|')[0]) + '</span>'); }
         });
+        track(it.src, ok);
         if (ok) right++; else wrong.push(it);
         $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + esc(ok ? t('correct') : t('not_quite')) + '</b> ' + esc(ok ? '' : t('answer_green')) + '</div>';
         $('#act').innerHTML = '<button class="btn primary" id="next">' + esc(i === n - 1 ? t('see_results') : t('next')) + '</button>';
@@ -1261,6 +1297,7 @@ var I18N = {
             var o = opts[+b.dataset.j]; b.disabled = true;
             if (o.c) b.classList.add('right'); else if (b === btn) b.classList.add('wrong'); else b.classList.add('dim');
           });
+          track(it.src, ok);
           if (ok) right++; else wrong.push(it);
           $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + esc(ok ? t('correct') : t('not_quite')) + '</b> ' + (it.explain ? esc(it.explain) : '') + '</div>';
           $('#act').innerHTML = '<button class="btn primary" id="next">' + esc(i === n - 1 ? t('see_results') : t('next')) + '</button>';
@@ -1273,9 +1310,55 @@ var I18N = {
     window.scrollTo(0, 0);
   }
 
+  /* ---------- Listening: hear the phrase, type it ---------- */
+  function fold(s){ return norm(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0451/g, '\u0435'); }
+  function listen(deck, list){
+    var items = list || sample(listenItems(deck), 10), n = items.length, i = 0, right = 0, wrong = [];
+    var ICON = '<svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+    function draw(){
+      if (!n || i >= n) {
+        return finish('listen', {big: right + ' / ' + n, sub: t('heard_ok'), pct: n ? right / n * 100 : 0, last: right + '/' + n, save: !list,
+          again: function(){ listen(deck); }, retry: wrong.length ? function(){ listen(deck, wrong); } : null});
+      }
+      var it = items[i];
+      app.innerHTML = top(i, n, (i + 1) + ' / ' + n) +
+        '<p class="label">' + esc(t('listen_label')) + '</p>' +
+        '<div class="lwrap"><button class="lspk" id="spk" aria-label="' + esc(t('hear')) + '">' + ICON + '</button></div>' +
+        '<input class="lin" id="lin" type="text" aria-label="' + esc(t('listen_label')) + '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">' +
+        '<p class="hint" id="lhint"></p><div id="fb" role="status"></div><div class="row" id="act"><button class="btn primary" id="check">' + esc(t('check')) + '</button></div>' +
+        '<div class="links"><button class="link small" id="meaning">' + esc(t('show_meaning')) + '</button>' +
+        '<button class="link small" id="slow" aria-pressed="' + SLOW + '">' + esc(SLOW ? t('slow_on') : t('slow_off')) + '</button></div>';
+      var inp = $('#lin'), checked = false;
+      inp.focus();
+      $('#spk').onclick = function(){ speak(it.a, it.l); inp.focus(); };
+      $('#slow').onclick = function(){ SLOW = !SLOW; try { localStorage.setItem('revision-room:slow', SLOW ? '1' : '0'); } catch (e) {} $('#slow').textContent = SLOW ? t('slow_on') : t('slow_off'); $('#slow').setAttribute('aria-pressed', SLOW); speak(it.a, it.l); inp.focus(); };
+      $('#meaning').onclick = function(){ $('#lhint').textContent = it.b; };
+      function doCheck(){
+        if (checked) return; checked = true;
+        var typed = inp.value, spoken = speakable(it.a), plain = it.a.replace(/\([^)]*\)/g, ' ');
+        var exact = [it.a, spoken, plain].some(function(x){ return norm(x) === norm(typed); });
+        var near = !exact && [it.a, spoken, plain].some(function(x){ return fold(x) === fold(typed); });
+        var ok = exact || near;
+        track(it, ok);
+        if (ok) right++; else wrong.push(it);
+        inp.readOnly = true; inp.classList.add(ok ? 'ok' : 'no');
+        $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + esc(ok ? t('correct') : t('not_quite')) + '</b> ' +
+          esc(near ? t('l_accents', {x: it.a}) : ok ? '' : t('l_answer', {x: it.a})) + (ok ? '' : '<br>' + esc(it.b)) + '</div>';
+        $('#act').innerHTML = '<button class="btn primary" id="next">' + esc(i === n - 1 ? t('see_results') : t('next')) + '</button>';
+        $('#next').onclick = function(){ i++; draw(); };
+        $('#next').focus();
+      }
+      inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); if (checked) { i++; draw(); } else doCheck(); } });
+      $('#check').onclick = doCheck;
+      speak(it.a, it.l);
+    }
+    draw();
+    window.scrollTo(0, 0);
+  }
+
   /* ---------- Matching ---------- */
   function match(deck){
-    var pairs = sample(deck.items, 12).map(function(p, i){ return {id: i, a: p.a, b: p.b}; });
+    var pairs = sample(deck.items, 12).map(function(p, i){ return {id: i, a: p.a, b: p.b, s: p}; });
     var size = pairs.length <= 7 ? pairs.length : 6, rounds = [];
     for (var s = 0; s < pairs.length; s += size) rounds.push(pairs.slice(s, s + size));
     if (rounds.length > 1 && rounds[rounds.length - 1].length < 3) { var tail = rounds.pop(); rounds[rounds.length - 1] = rounds[rounds.length - 1].concat(tail); }
@@ -1298,12 +1381,13 @@ var I18N = {
           if (sel && sel.el === chip) { chip.classList.remove('sel'); sel = null; return; }
           if (sel && sel.side !== side) {
             if (sel.id === id) {
+              track(pairs[+id].s, true);
               sel.el.classList.remove('sel'); sel.el.classList.add('done'); chip.classList.add('done');
               sel = null; matched++; doneTotal++;
               $('.prog i').style.width = (doneTotal / total * 100) + '%';
               if (matched === round.length) setTimeout(function(){ r++; draw(); }, 500);
             } else {
-              slips++;
+              slips++; track(pairs[+(side === 'a' ? id : sel.id)].s, false);
               var other = sel.el; other.classList.remove('sel'); sel = null;
               other.classList.add('slip'); chip.classList.add('slip');
               setTimeout(function(){ other.classList.remove('slip'); chip.classList.remove('slip'); }, 420);
