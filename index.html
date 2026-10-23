@@ -91,6 +91,10 @@ h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:7
 .mini table{border-collapse:collapse;width:100%;font-size:15px;background:var(--surface)}
 .mini th,.mini td{border:1px solid var(--line);padding:7px 12px;text-align:left}
 .mini th{color:var(--muted);font-weight:600;font-size:13px}
+.brand{display:flex;align-items:center;gap:8px;margin:0 0 14px;font:600 13px var(--body);letter-spacing:.01em;color:var(--accent)}
+.brand{text-decoration:none;width:fit-content}
+.brand:hover{text-decoration:underline}
+.brand .dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--mark)}
 .uisel{margin-left:auto;min-height:34px;padding:0 26px 0 10px;font:600 13px var(--body);letter-spacing:0;text-transform:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;cursor:pointer}
 .pick{margin-top:22px}
 .pick .seg{margin-top:8px}
@@ -226,8 +230,8 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 <script>
 /* Lesson-notes parser and exercise builders. Pure functions, no DOM. */
 var Parser = (function () {
-  var HEADER = /^(english|spanish|serbian|russian|german|french|italian|deutsch|german|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
-  var VOCAB = /vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabel|vokabular|wortschatz|redewendung|wendung|ausdr[uü]ck|rečnik|izraz/i;
+  var HEADER = /^(english|spanish|serbian|russian|german|french|italian|deutsch|german|srpski|srpska|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
+  var VOCAB = /vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabel|vokabular|wortschatz|redewendung|wendung|ausdr[uü]ck|vocabulaire|locution|mots|rečnik|recnik|izraz|fraz|reči|речник|израз|фраз/i;
   var STOP = new Set('a an the to of in on at for with and or but is are was were be been being am do does did have has had will would can could should may might must shall not no it its this that these those you your he she we they them his her our their my me one ones some any about up out off over into from by as if than then so too very just also more most much many get got go goes going made make sth smth smb sb someone something somebody'.split(' '));
 
   function clean(s) {
@@ -413,6 +417,8 @@ if (typeof module !== 'undefined') module.exports = Parser;
 var I18N = {
   en: {
     ui_name: 'English',
+    l_fr: 'French',
+    l_sr: 'Serbian', sr_note: 'Croatian and Bosnian voices also work for Serbian.',
     'pl.lessonN': {one: 'lesson', other: 'lessons'},
     practise_month: 'Practise all of {m}',
     m_listen: 'Listening', needs_voice: 'Needs a voice on this device', listen_label: 'Listen and type what you hear', show_meaning: 'Show the meaning', heard_ok: 'phrases heard correctly', l_accents: 'Right, but check the spelling: {x}', l_answer: 'It was: {x}',
@@ -470,6 +476,8 @@ var I18N = {
   },
   ru: {
     ui_name: 'Русский',
+    l_fr: 'французский',
+    l_sr: 'сербский', sr_note: 'Для сербского подойдут и хорватские или боснийские голоса.',
     'pl.lessonN': {one: 'урок', few: 'урока', many: 'уроков', other: 'урока'},
     practise_month: 'Учить всё: {m}',
     m_listen: 'Аудирование', needs_voice: 'Нужен голос на устройстве', listen_label: 'Послушайте и напишите, что услышали', show_meaning: 'Показать значение', heard_ok: 'фраз понято верно', l_accents: 'Верно, но проверьте написание: {x}', l_answer: 'Правильно: {x}',
@@ -528,6 +536,8 @@ var I18N = {
   },
   es: {
     ui_name: 'Español',
+    l_fr: 'francés',
+    l_sr: 'serbio', sr_note: 'Para el serbio también sirven las voces croatas o bosnias.',
     'pl.lessonN': {one: 'lección', other: 'lecciones'},
     practise_month: 'Practicar todo: {m}',
     m_listen: 'Escucha', needs_voice: 'Hace falta una voz en el dispositivo', listen_label: 'Escucha y escribe lo que oyes', show_meaning: 'Mostrar el significado', heard_ok: 'frases entendidas correctamente', l_accents: 'Correcto, pero revisa la ortografía: {x}', l_answer: 'Era: {x}',
@@ -585,6 +595,8 @@ var I18N = {
   },
   de: {
     ui_name: 'Deutsch',
+    l_fr: 'Französisch',
+    l_sr: 'Serbisch', sr_note: 'Für Serbisch funktionieren auch kroatische oder bosnische Stimmen.',
     'pl.lessonN': {one: 'Lektion', other: 'Lektionen'},
     practise_month: 'Alles üben: {m}',
     m_listen: 'Hörverstehen', needs_voice: 'Braucht eine Stimme auf dem Gerät', listen_label: 'Hör zu und tipp, was du hörst', show_meaning: 'Bedeutung zeigen', heard_ok: 'Wendungen richtig verstanden', l_accents: 'Richtig, aber prüf die Schreibweise: {x}', l_answer: 'Es war: {x}',
@@ -642,6 +654,8 @@ var I18N = {
   },
   sr: {
     ui_name: 'Srpski',
+    l_fr: 'francuski',
+    l_sr: 'srpski', sr_note: 'Za srpski odgovaraju i hrvatski ili bosanski glasovi.',
     'pl.lessonN': {one: 'lekcija', few: 'lekcije', other: 'lekcija'},
     practise_month: 'Vežbaj sve: {m}',
     m_listen: 'Slušanje', needs_voice: 'Treba glas na uređaju', listen_label: 'Poslušaj i ukucaj šta čuješ', show_meaning: 'Prikaži značenje', heard_ok: 'izraza tačno čuto', l_accents: 'Tačno, ali proveri pravopis: {x}', l_answer: 'Bilo je: {x}',
@@ -724,7 +738,7 @@ var I18N = {
     return f[cat] || f.other;
   }
   Parser.t = t;
-  var VERSION_LABEL = '14, 20 Oct';
+  var VERSION_LABEL = '17, 23 Oct';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
@@ -765,25 +779,28 @@ var I18N = {
 
   /* ---------- voices: the phone's own text-to-speech ---------- */
   var SPEECH = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
-  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru'], de: ['de-DE', 'de-AT', 'de-CH', 'de']};
+  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru'], de: ['de-DE', 'de-AT', 'de-CH', 'de'], sr: ['sr-RS', 'sr-Latn-RS', 'sr', 'hr-HR', 'bs-BA', 'hr', 'bs'], fr: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr']};
   function LN(lg){ return t('l_' + lg); }
   var SLOW = false;
   try { SLOW = localStorage.getItem('revision-room:slow') === '1'; } catch (e) {}
   function allVoices(){ try { return speechSynthesis.getVoices() || []; } catch (e) { return []; } }
   var CHOSEN = {};
   try { CHOSEN = JSON.parse(localStorage.getItem('revision-room:voices') || '{}') || {}; } catch (e) { CHOSEN = {}; }
+  var FAMILY = {sr: ['sr', 'hr', 'bs']};
   function voiceList(lg){
-    var vs = allVoices().filter(function(v){ return String(v.lang || '').replace('_', '-').toLowerCase().slice(0, 2) === lg; });
+    var fam = FAMILY[lg] || [lg];
+    var vs = allVoices().filter(function(v){ return fam.indexOf(String(v.lang || '').replace('_', '-').toLowerCase().slice(0, 2)) > -1; });
     var rank = function(v){ return /natural|neural|premium|enhanced/i.test(v.name) ? 0 : /google|siri/i.test(v.name) ? 1 : 2; };
-    return vs.sort(function(a, b){ return rank(a) - rank(b) || a.name.localeCompare(b.name); });
+    var fi = function(v){ return fam.indexOf(String(v.lang || '').replace('_', '-').toLowerCase().slice(0, 2)); };
+    return vs.sort(function(a, b){ return fi(a) - fi(b) || rank(a) - rank(b) || a.name.localeCompare(b.name); });
   }
   function voiceSelect(lg){
     if (!SPEECH || !LOCALES[lg]) return '';
     var vs = voiceList(lg);
-    if (!vs.length) return '<p class="hint" id="vhint">' + esc(t('no_voice_found', {l: LN(lg)})) + '</p>';
+    if (!vs.length) return '<p class="hint" id="vhint">' + esc(t('no_voice_found', {l: LN(lg)})) + (lg === 'sr' ? ' ' + esc(t('sr_note')) : '') + '</p>';
     return '<div class="vpick"><label for="vsel" class="label" style="margin:0">' + esc(t('voice')) + '</label><select id="vsel">' +
       '<option value="">' + esc(t('automatic')) + '</option>' + vs.map(function(v){ return '<option value="' + esc(v.name) + '"' + (CHOSEN[lg] === v.name ? ' selected' : '') + '>' + esc(v.name) + '</option>'; }).join('') + '</select></div>' +
-      '<p class="hint">' + esc(t('voice_tip', {l: LN(lg)})) + '</p>';
+      '<p class="hint">' + esc(t('voice_tip', {l: LN(lg)})) + (lg === 'sr' ? ' ' + esc(t('sr_note')) : '') + '</p>';
   }
   function pickVoice(lg){
     if (CHOSEN[lg]) { var c = allVoices().filter(function(v){ return v.name === CHOSEN[lg]; })[0]; if (c) return c; }
@@ -922,7 +939,7 @@ var I18N = {
     return l ? {id: l.id, title: l.title, items: withLang(l), lang: lessonLang(l)} : null;
   }
   function addLang(){ return LOCALES[S.addLang] ? S.addLang : 'en'; }
-  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский', de: 'Deutsch'};
+  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский', de: 'Deutsch', sr: 'Srpski', fr: 'Français'};
   function setLang(lg){
     var l = cur && S.lessons.filter(function(x){ return x.id === cur.id; })[0];
     if (!l || (lg !== 'off' && !LOCALES[lg])) return;
@@ -1010,10 +1027,11 @@ var I18N = {
   function library(){
     cur = null;
     var ls = S.lessons, html =
+      '<a class="brand" href="https://t.me/polycorner" target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Sasha\u2019s World of Languages</a>' +
       '<header><p class="eyebrow"><span>Revision Room</span>' + uiPicker() + '</p><h1><span class="hl">' + esc(t('your_lessons')) + '</span></h1>' +
       '<p class="sub">' + esc(t('sub')) + '</p></header>' +
       '<div class="pick"><span class="label" style="margin:0">' + esc(t('notes_lang')) + '</span><div class="seg" role="group" aria-label="' + esc(t('notes_lang')) + '">' +
-        ['en', 'es', 'ru', 'de'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
+        ['en', 'es', 'ru', 'de', 'sr', 'fr'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
         '</div><p class="hint">' + esc(t('notes_lang_hint')) + '</p></div>' +
       '<label class="drop" id="drop" for="file"><span class="dt">' + esc(t('drop_t')) + '</span><span class="dd">' + esc(t('drop_d')) + '</span></label>' +
       '<input class="vh" type="file" id="file" multiple accept=".pdf,.md,.markdown,.txt,application/pdf,text/markdown,text/plain">' +
@@ -1235,7 +1253,7 @@ var I18N = {
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
       (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">' + esc(t('read_first')) + '</button></div>' : '') +
       (SPEECH && deck.id !== '*' && deck.id !== '!' && deck.id.slice(0, 2) !== 'm:' ? '<div class="voice"><span class="label" style="margin:0">' + esc(t('speak_in')) + '</span><div class="seg" role="group" aria-label="' + esc(t('voice_lang')) + '">' +
-        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['off', t('off')]].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
+        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['sr', 'Srpski'], ['fr', 'Français'], ['off', t('off')]].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
       '<div class="tiles">' + MODES.map(function(m){
         var ls = m.id === 'listen', n = ls ? listenItems(deck).length : deck.items.length, off = n < m.min;
         return '<button class="tile' + (ls ? ' wide' : '') + '" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + esc(t(m.name)) + '</span><span class="tc">' + esc(off ? t(ls ? 'needs_voice' : 'needs_more') : m.count(deck)) + '</span>' +
