@@ -99,6 +99,26 @@ h1{font-size:clamp(32px,8vw,46px);line-height:1.08;margin:0 0 12px;font-weight:7
 .pick{margin-top:22px}
 .pick .seg{margin-top:8px}
 .hint{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.yt{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin-top:6px}
+.yt iframe,.yt>div{position:absolute;inset:0;width:100%;height:100%}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.ctl .count{margin-left:auto}
+.btn.on,.btn.ghost.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.mks{max-width:100%}.mk{min-width:0}
+.vw{flex:0 0 100%;width:100%}
+.vthumb{position:relative;display:block;width:100%;aspect-ratio:16/9;padding:0;border:0;border-radius:10px;overflow:hidden;background:#000;cursor:pointer}
+.vthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.vplay{position:absolute;inset:0;margin:auto;width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:grid;place-items:center;font-size:22px;padding-left:3px}
+.vframe{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000}
+.vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}a.btn.primary{color:var(--accent-ink)}
+.fb select{font:inherit;font-weight:400;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:48px}
+.mks{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.mk{display:flex;gap:8px;align-items:center}
+.mk input{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.mk .ck{flex:1;min-width:0;overflow-wrap:anywhere}
+.chip{flex:none;min-height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--accent);font-weight:600;cursor:pointer}
+.x{flex:none;width:40px;min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:20px;cursor:pointer}
 .fb{display:grid;gap:14px;margin-top:18px}
 .fb label{display:grid;gap:6px;font-size:14px;font-weight:600}
 .fb input,.fb textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
@@ -230,8 +250,8 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 <script>
 /* Lesson-notes parser and exercise builders. Pure functions, no DOM. */
 var Parser = (function () {
-  var HEADER = /^(english|spanish|serbian|russian|german|french|italian|deutsch|german|srpski|srpska|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
-  var VOCAB = /vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabel|vokabular|wortschatz|redewendung|wendung|ausdr[uü]ck|vocabulaire|locution|mots|rečnik|recnik|izraz|fraz|reči|речник|израз|фраз/i;
+  var HEADER = /^(polish|polski|polskie|angielski|hiszpański|rosyjski|niemiecki|francuski|słowo|słówka|słówko|zwrot|zwroty|wyrażenie|wyrażenia|tłumaczenie|znaczenie|english|spanish|serbian|russian|german|french|italian|deutsch|german|srpski|srpska|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
+  var VOCAB = /słown|słówk|wyrażen|zwrot|słownict|vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabel|vokabular|wortschatz|redewendung|wendung|ausdr[uü]ck|vocabulaire|locution|mots|rečnik|recnik|izraz|fraz|reči|речник|израз|фраз/i;
   var STOP = new Set('a an the to of in on at for with and or but is are was were be been being am do does did have has had will would can could should may might must shall not no it its this that these those you your he she we they them his her our their my me one ones some any about up out off over into from by as if than then so too very just also more most much many get got go goes going made make sth smth smb sb someone something somebody'.split(' '));
 
   function clean(s) {
@@ -425,14 +445,15 @@ var I18N = {
     tricky: 'Tricky chunks', tricky_sub: '{c} · get one right 3 times in a row and it leaves the list',
     your_lessons: 'Your lessons',
     sub: 'Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.',
-    notes_lang: 'Language of the notes',
-    notes_lang_hint: 'The language of the left column, the one you want to learn. It sets the voice. Pick it before you add a file.',
+    notes_lang: 'What language are you learning?', l_pl: 'Polish', vid_title: 'Videos', vid_entry: 'Save links in folders: shadowing, grammar, listening, podcasts.', vid_intro: 'Make a folder for each topic, then save your YouTube links in it.', vid_folder_new: 'New folder', vid_folder_ph: 'e.g. Shadowing, Grammar, Podcasts', vid_create: 'Create folder', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Folder', vid_save: 'Save link', vid_none: 'No folders yet. Create one above.', vid_bad: 'That doesn’t look like a link.', vid_dup: 'This link is already in that folder.', vid_dupf: 'You already have a folder with that name.', vid_saved: 'Saved.', vid_open: 'Open', vid_fdel: 'Delete folder', vid_empty: 'Empty folder.', vid_nofolder: 'No folder',
     drop_t: 'Add lesson notes', drop_d: 'Choose PDF or .md files, or drop them here',
     nosave: 'This browser is not letting the page save anything, so your lessons will be gone when you close the tab.',
     lessons: 'Lessons', mixed: 'All lessons mixed', mixed_sub: '{c} from {n} {w}',
     added: 'added {d}', read: 'Read', practise: 'Practise', remove: 'Remove', remove_again: 'Tap again to remove',
-    how_h: 'What the notes should look like',
-    how_p: 'The exercises come from the table under “Vocabulary & chunks”: the phrase on the left and its meaning on the right. The whole file stays in the app, so you can read the theory first with the Read button.',
+    how_h: 'What your notes should look like',
+    vid_watch: 'Watch here',
+    vid_untitled: 'YouTube video',
+    how_p: 'Exercises are built from a table with the phrase on the left and its meaning on the right, under a heading like “Vocabulary” or “Chunks”. The whole file stays in the app, so you can read it first with the Read button.',
     sample_btn: 'Try a sample lesson', sample_added: 'Added “Sample lesson”. Remove it any time.',
     foot: 'Lessons are stored on this device only, so a phone and a laptop each keep their own list. App version {v}.',
     feedback_btn: 'Send feedback', app_lang: 'App language',
@@ -484,14 +505,15 @@ var I18N = {
     tricky: 'Трудные фразы', tricky_sub: '{c} · ответьте верно 3 раза подряд, и фраза уйдёт из списка',
     your_lessons: 'Ваши уроки',
     sub: 'Добавляйте заметки с каждого урока (PDF или Markdown). Фразы и лексика из них превращаются в карточки, упражнения с пропусками, тест и сопоставление.',
-    notes_lang: 'Язык заметок',
-    notes_lang_hint: 'Язык левого столбца, того, который вы учите. От него зависит озвучка. Выберите его до добавления файла.',
+    notes_lang: 'Какой язык вы изучаете?', l_pl: 'польский', vid_title: 'Видео', vid_entry: 'Ссылки в папках: шэдоуинг, грамматика, аудирование, подкасты.', vid_intro: 'Создайте папку для каждой темы и сохраняйте в неё ссылки на YouTube.', vid_folder_new: 'Новая папка', vid_folder_ph: 'например: Шэдоуинг, Грамматика, Подкасты', vid_create: 'Создать папку', vid_link: 'Ссылка', vid_name: 'Название (по желанию)', vid_folder: 'Папка', vid_save: 'Сохранить ссылку', vid_none: 'Папок пока нет. Создайте первую выше.', vid_bad: 'Это не похоже на ссылку.', vid_dup: 'Эта ссылка уже есть в этой папке.', vid_dupf: 'Папка с таким названием уже есть.', vid_saved: 'Сохранено.', vid_open: 'Открыть', vid_fdel: 'Удалить папку', vid_empty: 'Папка пуста.', vid_nofolder: 'Без папки',
     drop_t: 'Добавить заметки урока', drop_d: 'Выберите PDF или .md файлы или перетащите их сюда',
     nosave: 'Этот браузер не даёт странице ничего сохранять, поэтому уроки пропадут после закрытия вкладки.',
     lessons: 'Уроки', mixed: 'Все уроки вместе', mixed_sub: '{c} из {n} {w}',
     added: 'добавлено {d}', read: 'Читать', practise: 'Учить', remove: 'Удалить', remove_again: 'Нажмите ещё раз, чтобы удалить',
     how_h: 'Как должны выглядеть заметки',
-    how_p: 'Упражнения строятся по таблице под заголовком «Vocabulary & chunks»: фраза слева, перевод справа. Весь файл остаётся в приложении, поэтому сначала можно прочитать теорию кнопкой «Читать».',
+    vid_watch: 'Смотреть здесь',
+    vid_untitled: 'Видео с YouTube',
+    how_p: 'Упражнения строятся по таблице, где слева фраза, а справа её значение, под заголовком вроде «Vocabulary» или «Chunks». Весь файл остаётся в приложении, поэтому его можно сначала прочитать кнопкой «Читать».',
     sample_btn: 'Попробовать пример урока', sample_added: 'Добавлен «Sample lesson». Его можно удалить в любой момент.',
     foot: 'Уроки хранятся только на этом устройстве: на телефоне и на ноутбуке списки свои. Версия приложения {v}.',
     feedback_btn: 'Написать отзыв', app_lang: 'Язык приложения',
@@ -544,14 +566,15 @@ var I18N = {
     tricky: 'Expresiones difíciles', tricky_sub: '{c} · acierta una 3 veces seguidas y sale de la lista',
     your_lessons: 'Tus lecciones',
     sub: 'Añade los apuntes de cada clase (PDF o Markdown). Las expresiones y el vocabulario se convierten en tarjetas, huecos por rellenar, un test y emparejar.',
-    notes_lang: 'Idioma de los apuntes',
-    notes_lang_hint: 'El idioma de la columna izquierda, el que quieres aprender. Define la voz. Elígelo antes de añadir un archivo.',
+    notes_lang: '¿Qué idioma estás aprendiendo?', l_pl: 'polaco', vid_title: 'Vídeos', vid_entry: 'Enlaces en carpetas: shadowing, gramática, escucha, pódcast.', vid_intro: 'Crea una carpeta para cada tema y guarda en ella tus enlaces de YouTube.', vid_folder_new: 'Carpeta nueva', vid_folder_ph: 'p. ej. Shadowing, Gramática, Pódcast', vid_create: 'Crear carpeta', vid_link: 'Enlace', vid_name: 'Nombre (opcional)', vid_folder: 'Carpeta', vid_save: 'Guardar enlace', vid_none: 'Aún no hay carpetas. Crea una arriba.', vid_bad: 'Eso no parece un enlace.', vid_dup: 'Este enlace ya está en esa carpeta.', vid_dupf: 'Ya tienes una carpeta con ese nombre.', vid_saved: 'Guardado.', vid_open: 'Abrir', vid_fdel: 'Borrar carpeta', vid_empty: 'Carpeta vacía.', vid_nofolder: 'Sin carpeta',
     drop_t: 'Añadir apuntes de clase', drop_d: 'Elige archivos PDF o .md, o suéltalos aquí',
     nosave: 'Este navegador no deja que la página guarde nada, así que tus lecciones se perderán al cerrar la pestaña.',
     lessons: 'Lecciones', mixed: 'Todas las lecciones juntas', mixed_sub: '{c} de {n} {w}',
     added: 'añadida el {d}', read: 'Leer', practise: 'Practicar', remove: 'Quitar', remove_again: 'Toca otra vez para quitar',
-    how_h: 'Cómo deben ser los apuntes',
-    how_p: 'Los ejercicios salen de la tabla bajo «Vocabulary & chunks»: la frase a la izquierda y su significado a la derecha. El archivo completo se queda en la app, así que puedes leer antes la teoría con el botón Leer.',
+    how_h: 'Cómo deben ser tus apuntes',
+    vid_watch: 'Ver aquí',
+    vid_untitled: 'Vídeo de YouTube',
+    how_p: 'Los ejercicios se crean a partir de una tabla con la frase a la izquierda y su significado a la derecha, bajo un título como «Vocabulary» o «Chunks». El archivo completo se queda en la app, así que puedes leerlo antes con el botón Leer.',
     sample_btn: 'Probar una lección de ejemplo', sample_added: 'Añadida «Sample lesson». Puedes quitarla cuando quieras.',
     foot: 'Las lecciones se guardan solo en este dispositivo, así que el móvil y el portátil tienen cada uno su lista. Versión de la app {v}.',
     feedback_btn: 'Enviar comentarios', app_lang: 'Idioma de la app',
@@ -603,14 +626,15 @@ var I18N = {
     tricky: 'Knifflige Ausdrücke', tricky_sub: '{c} · 3-mal in Folge richtig, dann verschwindet er aus der Liste',
     your_lessons: 'Deine Lektionen',
     sub: 'Füge die Notizen jeder Stunde hinzu (PDF oder Markdown). Aus den Wendungen und dem Wortschatz werden Karteikarten, Lückentexte, ein Quiz und Zuordnen.',
-    notes_lang: 'Sprache der Notizen',
-    notes_lang_hint: 'Die Sprache der linken Spalte, also die, die du lernst. Sie bestimmt die Stimme. Wähle sie, bevor du eine Datei hinzufügst.',
+    notes_lang: 'Welche Sprache lernst du?', l_pl: 'Polnisch', vid_title: 'Videos', vid_entry: 'Links in Ordnern: Shadowing, Grammatik, Hören, Podcasts.', vid_intro: 'Lege für jedes Thema einen Ordner an und speichere darin deine YouTube-Links.', vid_folder_new: 'Neuer Ordner', vid_folder_ph: 'z. B. Shadowing, Grammatik, Podcasts', vid_create: 'Ordner erstellen', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Ordner', vid_save: 'Link speichern', vid_none: 'Noch keine Ordner. Erstelle oben einen.', vid_bad: 'Das sieht nicht nach einem Link aus.', vid_dup: 'Dieser Link ist schon in diesem Ordner.', vid_dupf: 'Einen Ordner mit diesem Namen gibt es schon.', vid_saved: 'Gespeichert.', vid_open: 'Öffnen', vid_fdel: 'Ordner löschen', vid_empty: 'Ordner ist leer.', vid_nofolder: 'Ohne Ordner',
     drop_t: 'Stundennotizen hinzufügen', drop_d: 'PDF- oder .md-Dateien auswählen oder hierher ziehen',
     nosave: 'Dieser Browser erlaubt der Seite kein Speichern, deine Lektionen sind also weg, sobald du den Tab schließt.',
     lessons: 'Lektionen', mixed: 'Alle Lektionen gemischt', mixed_sub: '{c} aus {n} {w}',
     added: 'hinzugefügt am {d}', read: 'Lesen', practise: 'Üben', remove: 'Entfernen', remove_again: 'Nochmal tippen zum Entfernen',
-    how_h: 'So sollten die Notizen aussehen',
-    how_p: 'Die Übungen entstehen aus der Tabelle unter „Vocabulary & chunks“: links die Wendung, rechts die Bedeutung. Die ganze Datei bleibt in der App, du kannst also mit dem Knopf Lesen zuerst die Theorie lesen.',
+    how_h: 'So sollten deine Notizen aussehen',
+    vid_watch: 'Hier ansehen',
+    vid_untitled: 'YouTube-Video',
+    how_p: 'Die Übungen entstehen aus einer Tabelle mit der Wendung links und ihrer Bedeutung rechts, unter einer Überschrift wie „Vocabulary“ oder „Chunks“. Die ganze Datei bleibt in der App, du kannst sie also zuerst mit dem Knopf Lesen durchgehen.',
     sample_btn: 'Beispiellektion ausprobieren', sample_added: '„Sample lesson“ hinzugefügt. Du kannst sie jederzeit entfernen.',
     foot: 'Lektionen werden nur auf diesem Gerät gespeichert, Handy und Laptop haben also jeweils ihre eigene Liste. App-Version {v}.',
     feedback_btn: 'Feedback senden', app_lang: 'App-Sprache',
@@ -662,14 +686,15 @@ var I18N = {
     tricky: 'Teški izrazi', tricky_sub: '{c} · tačno tri puta zaredom i izraz izlazi sa liste',
     your_lessons: 'Tvoje lekcije',
     sub: 'Dodaj beleške sa svakog časa (PDF ili Markdown). Izrazi i vokabular iz njih postaju kartice, popunjavanje praznina, kviz i spajanje.',
-    notes_lang: 'Jezik beleški',
-    notes_lang_hint: 'Jezik leve kolone, onaj koji učiš. Od njega zavisi glas. Izaberi ga pre dodavanja fajla.',
+    notes_lang: 'Koji jezik učiš?', l_pl: 'poljski', vid_title: 'Snimci', vid_entry: 'Linkovi u fasciklama: shadowing, gramatika, slušanje, podkasti.', vid_intro: 'Napravi fasciklu za svaku temu i u nju sačuvaj YouTube linkove.', vid_folder_new: 'Nova fascikla', vid_folder_ph: 'npr. Shadowing, Gramatika, Podkasti', vid_create: 'Napravi fasciklu', vid_link: 'Link', vid_name: 'Naziv (nije obavezno)', vid_folder: 'Fascikla', vid_save: 'Sačuvaj link', vid_none: 'Još nema fascikli. Napravi je gore.', vid_bad: 'Ovo ne liči na link.', vid_dup: 'Ovaj link je već u toj fascikli.', vid_dupf: 'Fascikla sa tim imenom već postoji.', vid_saved: 'Sačuvano.', vid_open: 'Otvori', vid_fdel: 'Obriši fasciklu', vid_empty: 'Fascikla je prazna.', vid_nofolder: 'Bez fascikle',
     drop_t: 'Dodaj beleške sa časa', drop_d: 'Izaberi PDF ili .md fajlove ili ih prevuci ovde',
     nosave: 'Ovaj pregledač ne dozvoljava stranici da bilo šta sačuva, pa će lekcije nestati kad zatvoriš karticu.',
     lessons: 'Lekcije', mixed: 'Sve lekcije zajedno', mixed_sub: '{c} iz {n} {w}',
     added: 'dodato {d}', read: 'Čitaj', practise: 'Vežbaj', remove: 'Ukloni', remove_again: 'Dodirni ponovo da ukloniš',
-    how_h: 'Kako treba da izgledaju beleške',
-    how_p: 'Vežbe nastaju iz tabele ispod naslova „Vocabulary & chunks“: izraz levo, značenje desno. Ceo fajl ostaje u aplikaciji, pa možeš prvo da pročitaš teoriju dugmetom Čitaj.',
+    how_h: 'Kako treba da izgledaju tvoje beleške',
+    vid_watch: 'Gledaj ovde',
+    vid_untitled: 'YouTube snimak',
+    how_p: 'Vežbe nastaju iz tabele sa izrazom levo i njegovim značenjem desno, ispod naslova poput „Vocabulary“ ili „Chunks“. Ceo fajl ostaje u aplikaciji, pa ga možeš prvo da pročitaš dugmetom Čitaj.',
     sample_btn: 'Probaj primer lekcije', sample_added: 'Dodata je „Sample lesson“. Možeš je ukloniti bilo kad.',
     foot: 'Lekcije se čuvaju samo na ovom uređaju, pa telefon i laptop imaju svaki svoju listu. Verzija aplikacije {v}.',
     feedback_btn: 'Pošalji povratnu informaciju', app_lang: 'Jezik aplikacije',
@@ -738,13 +763,13 @@ var I18N = {
     return f[cat] || f.other;
   }
   Parser.t = t;
-  var VERSION_LABEL = '17, 23 Oct';
+  var VERSION_LABEL = '20, 31 Oct';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
   try {
     var raw = localStorage.getItem(LIB_KEY);
-    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; if (p.hard && typeof p.hard === 'object') S.hard = p.hard; if (p.fold && typeof p.fold === 'object') S.fold = p.fold; } }
+    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; if (p.shadow && Array.isArray(p.shadow.vids)) S.shadow = p.shadow; if (p.hard && typeof p.hard === 'object') S.hard = p.hard; if (p.fold && typeof p.fold === 'object') S.fold = p.fold; } }
   } catch (e) { canSave = false; }
   function persist(){ try { localStorage.setItem(LIB_KEY, JSON.stringify(S)); canSave = true; } catch (e) { canSave = false; } }
 
@@ -779,7 +804,7 @@ var I18N = {
 
   /* ---------- voices: the phone's own text-to-speech ---------- */
   var SPEECH = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
-  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru'], de: ['de-DE', 'de-AT', 'de-CH', 'de'], sr: ['sr-RS', 'sr-Latn-RS', 'sr', 'hr-HR', 'bs-BA', 'hr', 'bs'], fr: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr']};
+  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru'], de: ['de-DE', 'de-AT', 'de-CH', 'de'], sr: ['sr-RS', 'sr-Latn-RS', 'sr', 'hr-HR', 'bs-BA', 'hr', 'bs'], fr: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr'], pl: ['pl-PL', 'pl']};
   function LN(lg){ return t('l_' + lg); }
   var SLOW = false;
   try { SLOW = localStorage.getItem('revision-room:slow') === '1'; } catch (e) {}
@@ -908,6 +933,115 @@ var I18N = {
     if (e.target.closest('#sample')) { var sid = addLesson('Sample lesson', Parser.parseMarkdown(SAMPLE)); putFile(sid, {type: 'md', name: 'Sample lesson.md', text: SAMPLE}); notice = {kind: 'good', text: t('sample_added')}; library(); }
   });
 
+  /* ---------- Videos: folders of saved links ---------- */
+  var vSel = '';
+  function shad(){
+    var s = S.shadow || (S.shadow = {});
+    if (!Array.isArray(s.vids)) s.vids = [];
+    if (!Array.isArray(s.folders)) s.folders = [];
+    s.vids.forEach(function(v){ if (!v.url) v.url = 'https://youtu.be/' + v.id; if (v.sec && s.folders.indexOf(v.sec) < 0) s.folders.push(v.sec); });
+    return s;
+  }
+  function ytId(s){
+    var m = /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|embed\/|live\/|v\/))([A-Za-z0-9_-]{11})(?![A-Za-z0-9_-])/.exec(String(s));
+    return m ? m[1] : null;
+  }
+  function cleanUrl(s){
+    s = String(s).trim();
+    if (/^(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(s)) s = 'https://' + s;
+    return /^https?:\/\/[^\s\/]+\.[^\s\/]+[^\s]*$/i.test(s) ? s : null;
+  }
+  function vTitle(v){
+    if (v.title) return v.title;
+    if (ytId(v.url)) return t('vid_untitled');
+    try { return new URL(v.url).hostname.replace(/^www\./, ''); } catch (e) { return v.url; }
+  }
+  function fillTitle(v){
+    if (v.title || v.tried || !window.fetch || !ytId(v.url)) return;
+    v.tried = true;
+    var q = encodeURIComponent(v.url);
+    function get(u){ return fetch(u).then(function(r){ if (!r.ok) throw 0; return r.json(); }).then(function(j){ if (!j || !j.title) throw 0; return String(j.title); }); }
+    get('https://noembed.com/embed?url=' + q).catch(function(){ return get('https://www.youtube.com/oembed?format=json&url=' + q); }).then(function(ti){
+      if (!v.title) { v.title = ti.slice(0, 140); delete v.tried; persist(); if (document.getElementById('vflist')) videoList(); }
+    }).catch(function(){});
+  }
+  function shArm(btn, fn){
+    if (btn.dataset.armed) { fn(); return; }
+    var old = btn.textContent;
+    btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = t('remove_again');
+    setTimeout(function(){ if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.textContent = old; } }, 3000);
+  }
+  function thumbHtml(v){
+    var y = ytId(v.url);
+    return '<button type="button" class="vthumb" data-watch="' + esc(v.id) + '" aria-label="' + esc(t('vid_watch')) + '"><img alt="" loading="lazy" src="https://i.ytimg.com/vi/' + y + '/hqdefault.jpg" onerror="this.style.display=\'none\'"><span class="vplay" aria-hidden="true">\u25b6</span></button>';
+  }
+  function watchHtml(v){
+    return '<div class="vframe"><iframe src="https://www.youtube-nocookie.com/embed/' + ytId(v.url) + '?playsinline=1&rel=0&autoplay=1" title="' + esc(vTitle(v)) + '" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>';
+  }
+  function videoList(msg){
+    cur = null;
+    var sh = shad(), fs = sh.folders.slice(), loose = sh.vids.filter(function(v){ return !v.sec; });
+    if (vSel === '' || fs.indexOf(vSel) < 0) vSel = fs[0] || '';
+    var html = '<div class="bar"><button class="link" data-back>' + esc(t('back')) + '</button></div>' +
+      '<header><h1><span class="hl">' + esc(t('vid_title')) + '</span></h1><p class="sub">' + esc(t('vid_intro')) + '</p></header>' +
+      '<form class="fb" id="vfolder" novalidate><label>' + esc(t('vid_folder_new')) + '<input id="vfname" maxlength="40" autocomplete="off" placeholder="' + esc(t('vid_folder_ph')) + '"></label>' +
+      '<div class="row" style="margin-top:0"><button class="btn primary" type="submit">' + esc(t('vid_create')) + '</button></div></form>';
+    if (fs.length) {
+      html += '<form class="fb" id="vadd" novalidate style="margin-top:18px"><label>' + esc(t('vid_link')) + '<input id="vurl" inputmode="url" autocomplete="off" placeholder="https://youtu.be/…"></label>' +
+        '<label>' + esc(t('vid_name')) + '<input id="vname" maxlength="140" autocomplete="off"></label>' +
+        '<label>' + esc(t('vid_folder')) + '<select id="vsel">' + fs.map(function(f){ return '<option value="' + esc(f) + '"' + (f === vSel ? ' selected' : '') + '>' + esc(f) + '</option>'; }).join('') + '</select></label>' +
+        '<div class="row" style="margin-top:0"><button class="btn primary" type="submit">' + esc(t('vid_save')) + '</button></div></form>';
+    }
+    html += '<div id="vmsg" class="msg ' + (msg ? msg.kind : '') + '" role="status">' + (msg ? esc(msg.text) : '') + '</div><div id="vflist">';
+    if (!fs.length && !loose.length) html += '<p class="hint">' + esc(t('vid_none')) + '</p>';
+    function rows(list){
+      return '<ul class="lessons">' + list.map(function(v){
+        var yid = ytId(v.url);
+        return '<li class="lesson">' + (yid ? '<div class="vw" data-vw="' + esc(v.id) + '">' + thumbHtml(v) + '</div>' : '') + '<div class="lm"><b class="lt">' + esc(vTitle(v)) + '</b></div><div class="la"><a class="btn primary sm" href="' + esc(v.url) + '" target="_blank" rel="noopener">' + esc(t('vid_open')) + '</a><button class="btn ghost sm" data-vdel="' + esc(v.id) + '">' + esc(t('remove')) + '</button></div></li>';
+      }).join('') + '</ul>';
+    }
+    fs.forEach(function(f, i){
+      var list = sh.vids.filter(function(v){ return v.sec === f; });
+      html += '<section class="sec"><div class="top" style="margin-bottom:8px"><p class="label" style="margin:0">' + esc(f) + ' · ' + list.length + '</p><button class="btn ghost sm" data-fdel="' + i + '">' + esc(t('vid_fdel')) + '</button></div>' + (list.length ? rows(list) : '<p class="hint" style="margin-top:0">' + esc(t('vid_empty')) + '</p>') + '</section>';
+    });
+    if (loose.length) html += '<section class="sec"><p class="label">' + esc(t('vid_nofolder')) + '</p>' + rows(loose) + '</section>';
+    app.innerHTML = html + '</div>';
+    window.scrollTo(0, 0);
+    sh.vids.forEach(fillTitle);
+  }
+  app.addEventListener('click', function(e){
+    var tg;
+    if (e.target.closest('[data-shadow]')) { videoList(); return; }
+    if ((tg = e.target.closest('[data-watch]'))) {
+      var wv = shad().vids.filter(function(x){ return x.id === tg.dataset.watch; })[0];
+      if (wv) {
+        [].forEach.call(app.querySelectorAll('[data-vw]'), function(w){ var o = shad().vids.filter(function(x){ return x.id === w.dataset.vw; })[0]; if (o && w.querySelector('iframe')) w.innerHTML = thumbHtml(o); });
+        tg.closest('[data-vw]').innerHTML = watchHtml(wv);
+      }
+      return;
+    }
+    if ((tg = e.target.closest('[data-vdel]'))) { shArm(tg, function(){ var id = tg.dataset.vdel; shad().vids = shad().vids.filter(function(x){ return x.id !== id; }); persist(); videoList(); }); return; }
+    if ((tg = e.target.closest('[data-fdel]'))) { shArm(tg, function(){ var sh = shad(), f = sh.folders[+tg.dataset.fdel]; sh.vids = sh.vids.filter(function(x){ return x.sec !== f; }); sh.folders = sh.folders.filter(function(x){ return x !== f; }); persist(); videoList(); }); return; }
+  });
+  app.addEventListener('change', function(e){ if (e.target.id === 'vsel') vSel = e.target.value; });
+  app.addEventListener('submit', function(e){
+    var sh;
+    if (e.target.id === 'vfolder') {
+      e.preventDefault(); sh = shad();
+      var n = document.getElementById('vfname').value.trim().replace(/\s+/g, ' ').slice(0, 40);
+      if (!n) return;
+      if (sh.folders.some(function(f){ return f.toLowerCase() === n.toLowerCase(); })) { videoList({kind: 'bad', text: t('vid_dupf')}); return; }
+      sh.folders.push(n); vSel = n; persist(); videoList();
+    } else if (e.target.id === 'vadd') {
+      e.preventDefault(); sh = shad();
+      var u = cleanUrl(document.getElementById('vurl').value), f = document.getElementById('vsel').value;
+      if (!u) { videoList({kind: 'bad', text: t('vid_bad')}); return; }
+      if (sh.vids.some(function(v){ return v.url === u && v.sec === f; })) { videoList({kind: 'bad', text: t('vid_dup')}); return; }
+      sh.vids.unshift({id: uid(), url: u, title: document.getElementById('vname').value.trim().slice(0, 140), sec: f, added: Date.now()});
+      vSel = f; persist(); videoList({kind: 'good', text: t('vid_saved')});
+    }
+  });
+
   /* Tricky chunks: a miss puts a chunk on the list, three right in a row takes it off. Works across lessons. */
   function track(it, ok){
     if (!it || !it.a) return;
@@ -939,7 +1073,7 @@ var I18N = {
     return l ? {id: l.id, title: l.title, items: withLang(l), lang: lessonLang(l)} : null;
   }
   function addLang(){ return LOCALES[S.addLang] ? S.addLang : 'en'; }
-  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский', de: 'Deutsch', sr: 'Srpski', fr: 'Français'};
+  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский', de: 'Deutsch', sr: 'Srpski', fr: 'Français', pl: 'Polski'};
   function setLang(lg){
     var l = cur && S.lessons.filter(function(x){ return x.id === cur.id; })[0];
     if (!l || (lg !== 'off' && !LOCALES[lg])) return;
@@ -1031,11 +1165,12 @@ var I18N = {
       '<header><p class="eyebrow"><span>Revision Room</span>' + uiPicker() + '</p><h1><span class="hl">' + esc(t('your_lessons')) + '</span></h1>' +
       '<p class="sub">' + esc(t('sub')) + '</p></header>' +
       '<div class="pick"><span class="label" style="margin:0">' + esc(t('notes_lang')) + '</span><div class="seg" role="group" aria-label="' + esc(t('notes_lang')) + '">' +
-        ['en', 'es', 'ru', 'de', 'sr', 'fr'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
-        '</div><p class="hint">' + esc(t('notes_lang_hint')) + '</p></div>' +
+        ['en', 'es', 'ru', 'de', 'sr', 'fr', 'pl'].map(function(k){ return '<button class="segb' + (addLang() === k ? ' on' : '') + '" data-addlang="' + k + '" aria-pressed="' + (addLang() === k) + '">' + LANG_NAMES[k] + '</button>'; }).join('') +
+        '</div></div>' +
       '<label class="drop" id="drop" for="file"><span class="dt">' + esc(t('drop_t')) + '</span><span class="dd">' + esc(t('drop_d')) + '</span></label>' +
       '<input class="vh" type="file" id="file" multiple accept=".pdf,.md,.markdown,.txt,application/pdf,text/markdown,text/plain">' +
       '<div id="msg" class="msg ' + (notice ? notice.kind : '') + '" role="status">' + (notice ? esc(notice.text) : '') + '</div>' +
+      '<section class="sec"><ul class="lessons"><li class="lesson"><div class="lm"><b class="lt">' + esc(t('vid_title')) + '</b><span class="lc">' + esc(t('vid_entry')) + '</span></div><div class="la"><button class="btn primary sm" data-shadow>' + esc(t('vid_open')) + '</button></div></li></ul></section>' +
       (canSave ? '' : '<p class="warn">' + esc(t('nosave')) + '</p>');
     if (ls.length) {
       html += '<section class="sec"><p class="label">' + esc(t('lessons')) + '</p><ul class="lessons">';
@@ -1253,7 +1388,7 @@ var I18N = {
       '<h1><span class="hl">' + esc(deck.title) + '</span></h1></header>' +
       (have[deck.id] ? '<div class="row" style="margin-top:18px"><button class="btn ghost" data-read="' + esc(deck.id) + '" style="flex:none">' + esc(t('read_first')) + '</button></div>' : '') +
       (SPEECH && deck.id !== '*' && deck.id !== '!' && deck.id.slice(0, 2) !== 'm:' ? '<div class="voice"><span class="label" style="margin:0">' + esc(t('speak_in')) + '</span><div class="seg" role="group" aria-label="' + esc(t('voice_lang')) + '">' +
-        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['sr', 'Srpski'], ['fr', 'Français'], ['off', t('off')]].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
+        [['en', 'English'], ['es', 'Español'], ['ru', 'Русский'], ['de', 'Deutsch'], ['sr', 'Srpski'], ['fr', 'Français'], ['pl', 'Polski'], ['off', t('off')]].map(function(o){ return '<button class="segb' + (deck.lang === o[0] ? ' on' : '') + '" data-lang="' + o[0] + '" aria-pressed="' + (deck.lang === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>' + (deck.lang !== 'off' ? '<div id="vbox">' + voiceSelect(deck.lang) + '</div>' : '') : '') +
       '<div class="tiles">' + MODES.map(function(m){
         var ls = m.id === 'listen', n = ls ? listenItems(deck).length : deck.items.length, off = n < m.min;
         return '<button class="tile' + (ls ? ' wide' : '') + '" data-mode="' + m.id + '"' + (off ? ' disabled' : '') + '><span class="tn">' + esc(t(m.name)) + '</span><span class="tc">' + esc(off ? t(ls ? 'needs_voice' : 'needs_more') : m.count(deck)) + '</span>' +
