@@ -287,8 +287,8 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 <script>
 /* Lesson-notes parser and exercise builders. Pure functions, no DOM. */
 var Parser = (function () {
-  var HEADER = /^(עברית|אנגלית|רוסית|ספרדית|גרמנית|צרפתית|תרגום|משמעות|מילה|ביטוי|ביטויים|מילים|polish|polski|polskie|angielski|hiszpański|rosyjski|niemiecki|francuski|słowo|słówka|słówko|zwrot|zwroty|wyrażenie|wyrażenia|tłumaczenie|znaczenie|english|spanish|serbian|russian|german|french|italian|deutsch|german|srpski|srpska|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
-  var VOCAB = /אוצר|מילים|ביטוי|צירוף|מילון|słown|słówk|wyrażen|zwrot|słownict|vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabel|vokabular|wortschatz|redewendung|wendung|ausdr[uü]ck|vocabulaire|locution|mots|rečnik|recnik|izraz|fraz|reči|речник|израз|фраз/i;
+  var HEADER = /^(עברית|אנגלית|רוסית|ספרדית|גרמנית|צרפתית|תרגום|משמעות|מילה|ביטוי|ביטויים|מילים|nederlands|engels|spaans|russisch|duits|frans|woord|woorden|woordenschat|zin|zinnen|uitdrukking|uitdrukkingen|vertaling|betekenis|italiano|inglese|spagnolo|russo|tedesco|francese|parola|parole|frase|frasi|espressione|espressioni|traduzione|significato|português|portugues|inglês|ingles|espanhol|russo|alemão|francês|palavra|palavras|expressão|expressões|frases|tradução|significado|suomi|englanti|espanja|venäjä|saksa|ranska|sana|sanat|lause|lauseet|ilmaus|ilmaukset|käännös|merkitys|polish|polski|polskie|angielski|hiszpański|rosyjski|niemiecki|francuski|słowo|słówka|słówko|zwrot|zwroty|wyrażenie|wyrażenia|tłumaczenie|znaczenie|english|spanish|serbian|russian|german|french|italian|deutsch|german|srpski|srpska|chunk|chunks|phrase|phrases|vocabulary|vocab|word|words|expression|expressions|translation|meaning|gloss|слово|слова|фраза|фразы|выражение|перевод|значение|английский|испанский|сербский|русский|немецкий|французский|итальянский)(?![\p{L}])/iu;
+  var VOCAB = /אוצר|מילים|ביטוי|צירוף|מילון|słown|słówk|wyrażen|zwrot|słownict|woordenschat|woorden|uitdrukking|vocabolario|parole|espressioni|vocabulário|vocabulario|palavras|expressões|sanasto|sanat|ilmaus|vocab|chunk|слов|лексик|phrase|expression|palabras|frases|l[eé]xico|vokabel|vokabular|wortschatz|redewendung|wendung|ausdr[uü]ck|vocabulaire|locution|mots|rečnik|recnik|izraz|fraz|reči|речник|израз|фраз/i;
   var STOP = new Set('a an the to of in on at for with and or but is are was were be been being am do does did have has had will would can could should may might must shall not no it its this that these those you your he she we they them his her our their my me one ones some any about up out off over into from by as if than then so too very just also more most much many get got go goes going made make sth smth smb sb someone something somebody'.split(' '));
 
   function clean(s) {
@@ -483,7 +483,7 @@ var I18N = {
     your_lessons: 'My lessons', l_he: 'Hebrew', menu_btn: 'Menu',
     vid_title: 'My videos',
     sub: 'Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.',
-    notes_lang: 'What language are you learning?', l_pl: 'Polish', vid_entry: 'Save links in folders: shadowing, grammar, listening, podcasts.', vid_intro: 'Make a folder for each topic, then save your YouTube links in it.', vid_folder_new: 'New folder', vid_folder_ph: 'e.g. Shadowing, Grammar, Podcasts', vid_create: 'Create folder', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Folder', vid_save: 'Save link', vid_none: 'No folders yet. Create one above.', vid_bad: 'That doesn’t look like a link.', vid_dup: 'This link is already in that folder.', vid_dupf: 'You already have a folder with that name.', vid_saved: 'Saved.', vid_open: 'Open', vid_fdel: 'Delete folder', vid_empty: 'Empty folder.', vid_nofolder: 'No folder',
+    notes_lang: 'What language are you learning?', l_pl: 'Polish', l_nl: 'Dutch', l_it: 'Italian', l_pt: 'Portuguese', l_fi: 'Finnish', vid_entry: 'Save links in folders: shadowing, grammar, listening, podcasts.', vid_intro: 'Make a folder for each topic, then save your YouTube links in it.', vid_folder_new: 'New folder', vid_folder_ph: 'e.g. Shadowing, Grammar, Podcasts', vid_create: 'Create folder', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Folder', vid_save: 'Save link', vid_none: 'No folders yet. Create one above.', vid_bad: 'That doesn’t look like a link.', vid_dup: 'This link is already in that folder.', vid_dupf: 'You already have a folder with that name.', vid_saved: 'Saved.', vid_open: 'Open', vid_fdel: 'Delete folder', vid_empty: 'Empty folder.', vid_nofolder: 'No folder',
     drop_t: 'Add lesson notes', drop_d: 'Choose PDF or .md files, or drop them here',
     nosave: 'This browser is not letting the page save anything, so your lessons will be gone when you close the tab.',
     lessons: 'Lessons', mixed: 'All lessons mixed', mixed_sub: '{c} from {n} {w}',
@@ -543,7 +543,7 @@ var I18N = {
     your_lessons: 'Мои уроки', l_he: 'иврит', menu_btn: 'Меню',
     vid_title: 'Мои видео',
     sub: 'Добавляйте заметки с каждого урока (PDF или Markdown). Фразы и лексика из них превращаются в карточки, упражнения с пропусками, тест и сопоставление.',
-    notes_lang: 'Какой язык вы изучаете?', l_pl: 'польский', vid_entry: 'Ссылки в папках: шэдоуинг, грамматика, аудирование, подкасты.', vid_intro: 'Создайте папку для каждой темы и сохраняйте в неё ссылки на YouTube.', vid_folder_new: 'Новая папка', vid_folder_ph: 'например: Шэдоуинг, Грамматика, Подкасты', vid_create: 'Создать папку', vid_link: 'Ссылка', vid_name: 'Название (по желанию)', vid_folder: 'Папка', vid_save: 'Сохранить ссылку', vid_none: 'Папок пока нет. Создайте первую выше.', vid_bad: 'Это не похоже на ссылку.', vid_dup: 'Эта ссылка уже есть в этой папке.', vid_dupf: 'Папка с таким названием уже есть.', vid_saved: 'Сохранено.', vid_open: 'Открыть', vid_fdel: 'Удалить папку', vid_empty: 'Папка пуста.', vid_nofolder: 'Без папки',
+    notes_lang: 'Какой язык вы изучаете?', l_pl: 'польский', l_nl: 'нидерландский', l_it: 'итальянский', l_pt: 'португальский', l_fi: 'финский', vid_entry: 'Ссылки в папках: шэдоуинг, грамматика, аудирование, подкасты.', vid_intro: 'Создайте папку для каждой темы и сохраняйте в неё ссылки на YouTube.', vid_folder_new: 'Новая папка', vid_folder_ph: 'например: Шэдоуинг, Грамматика, Подкасты', vid_create: 'Создать папку', vid_link: 'Ссылка', vid_name: 'Название (по желанию)', vid_folder: 'Папка', vid_save: 'Сохранить ссылку', vid_none: 'Папок пока нет. Создайте первую выше.', vid_bad: 'Это не похоже на ссылку.', vid_dup: 'Эта ссылка уже есть в этой папке.', vid_dupf: 'Папка с таким названием уже есть.', vid_saved: 'Сохранено.', vid_open: 'Открыть', vid_fdel: 'Удалить папку', vid_empty: 'Папка пуста.', vid_nofolder: 'Без папки',
     drop_t: 'Добавить заметки урока', drop_d: 'Выберите PDF или .md файлы или перетащите их сюда',
     nosave: 'Этот браузер не даёт странице ничего сохранять, поэтому уроки пропадут после закрытия вкладки.',
     lessons: 'Уроки', mixed: 'Все уроки вместе', mixed_sub: '{c} из {n} {w}',
@@ -604,7 +604,7 @@ var I18N = {
     your_lessons: 'Mis lecciones', l_he: 'hebreo', menu_btn: 'Menú',
     vid_title: 'Mis vídeos',
     sub: 'Añade los apuntes de cada clase (PDF o Markdown). Las expresiones y el vocabulario se convierten en tarjetas, huecos por rellenar, un test y emparejar.',
-    notes_lang: '¿Qué idioma estás aprendiendo?', l_pl: 'polaco', vid_entry: 'Enlaces en carpetas: shadowing, gramática, escucha, pódcast.', vid_intro: 'Crea una carpeta para cada tema y guarda en ella tus enlaces de YouTube.', vid_folder_new: 'Carpeta nueva', vid_folder_ph: 'p. ej. Shadowing, Gramática, Pódcast', vid_create: 'Crear carpeta', vid_link: 'Enlace', vid_name: 'Nombre (opcional)', vid_folder: 'Carpeta', vid_save: 'Guardar enlace', vid_none: 'Aún no hay carpetas. Crea una arriba.', vid_bad: 'Eso no parece un enlace.', vid_dup: 'Este enlace ya está en esa carpeta.', vid_dupf: 'Ya tienes una carpeta con ese nombre.', vid_saved: 'Guardado.', vid_open: 'Abrir', vid_fdel: 'Borrar carpeta', vid_empty: 'Carpeta vacía.', vid_nofolder: 'Sin carpeta',
+    notes_lang: '¿Qué idioma estás aprendiendo?', l_pl: 'polaco', l_nl: 'neerlandés', l_it: 'italiano', l_pt: 'portugués', l_fi: 'finés', vid_entry: 'Enlaces en carpetas: shadowing, gramática, escucha, pódcast.', vid_intro: 'Crea una carpeta para cada tema y guarda en ella tus enlaces de YouTube.', vid_folder_new: 'Carpeta nueva', vid_folder_ph: 'p. ej. Shadowing, Gramática, Pódcast', vid_create: 'Crear carpeta', vid_link: 'Enlace', vid_name: 'Nombre (opcional)', vid_folder: 'Carpeta', vid_save: 'Guardar enlace', vid_none: 'Aún no hay carpetas. Crea una arriba.', vid_bad: 'Eso no parece un enlace.', vid_dup: 'Este enlace ya está en esa carpeta.', vid_dupf: 'Ya tienes una carpeta con ese nombre.', vid_saved: 'Guardado.', vid_open: 'Abrir', vid_fdel: 'Borrar carpeta', vid_empty: 'Carpeta vacía.', vid_nofolder: 'Sin carpeta',
     drop_t: 'Añadir apuntes de clase', drop_d: 'Elige archivos PDF o .md, o suéltalos aquí',
     nosave: 'Este navegador no deja que la página guarde nada, así que tus lecciones se perderán al cerrar la pestaña.',
     lessons: 'Lecciones', mixed: 'Todas las lecciones juntas', mixed_sub: '{c} de {n} {w}',
@@ -664,7 +664,7 @@ var I18N = {
     your_lessons: 'Meine Lektionen', l_he: 'Hebräisch', menu_btn: 'Menü',
     vid_title: 'Meine Videos',
     sub: 'Füge die Notizen jeder Stunde hinzu (PDF oder Markdown). Aus den Wendungen und dem Wortschatz werden Karteikarten, Lückentexte, ein Quiz und Zuordnen.',
-    notes_lang: 'Welche Sprache lernst du?', l_pl: 'Polnisch', vid_entry: 'Links in Ordnern: Shadowing, Grammatik, Hören, Podcasts.', vid_intro: 'Lege für jedes Thema einen Ordner an und speichere darin deine YouTube-Links.', vid_folder_new: 'Neuer Ordner', vid_folder_ph: 'z. B. Shadowing, Grammatik, Podcasts', vid_create: 'Ordner erstellen', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Ordner', vid_save: 'Link speichern', vid_none: 'Noch keine Ordner. Erstelle oben einen.', vid_bad: 'Das sieht nicht nach einem Link aus.', vid_dup: 'Dieser Link ist schon in diesem Ordner.', vid_dupf: 'Einen Ordner mit diesem Namen gibt es schon.', vid_saved: 'Gespeichert.', vid_open: 'Öffnen', vid_fdel: 'Ordner löschen', vid_empty: 'Ordner ist leer.', vid_nofolder: 'Ohne Ordner',
+    notes_lang: 'Welche Sprache lernst du?', l_pl: 'Polnisch', l_nl: 'Niederländisch', l_it: 'Italienisch', l_pt: 'Portugiesisch', l_fi: 'Finnisch', vid_entry: 'Links in Ordnern: Shadowing, Grammatik, Hören, Podcasts.', vid_intro: 'Lege für jedes Thema einen Ordner an und speichere darin deine YouTube-Links.', vid_folder_new: 'Neuer Ordner', vid_folder_ph: 'z. B. Shadowing, Grammatik, Podcasts', vid_create: 'Ordner erstellen', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Ordner', vid_save: 'Link speichern', vid_none: 'Noch keine Ordner. Erstelle oben einen.', vid_bad: 'Das sieht nicht nach einem Link aus.', vid_dup: 'Dieser Link ist schon in diesem Ordner.', vid_dupf: 'Einen Ordner mit diesem Namen gibt es schon.', vid_saved: 'Gespeichert.', vid_open: 'Öffnen', vid_fdel: 'Ordner löschen', vid_empty: 'Ordner ist leer.', vid_nofolder: 'Ohne Ordner',
     drop_t: 'Stundennotizen hinzufügen', drop_d: 'PDF- oder .md-Dateien auswählen oder hierher ziehen',
     nosave: 'Dieser Browser erlaubt der Seite kein Speichern, deine Lektionen sind also weg, sobald du den Tab schließt.',
     lessons: 'Lektionen', mixed: 'Alle Lektionen gemischt', mixed_sub: '{c} aus {n} {w}',
@@ -724,7 +724,7 @@ var I18N = {
     your_lessons: 'Moje lekcije', l_he: 'hebrejski', menu_btn: 'Meni',
     vid_title: 'Moji snimci',
     sub: 'Dodaj beleške sa svakog časa (PDF ili Markdown). Izrazi i vokabular iz njih postaju kartice, popunjavanje praznina, kviz i spajanje.',
-    notes_lang: 'Koji jezik učiš?', l_pl: 'poljski', vid_entry: 'Linkovi u fasciklama: shadowing, gramatika, slušanje, podkasti.', vid_intro: 'Napravi fasciklu za svaku temu i u nju sačuvaj YouTube linkove.', vid_folder_new: 'Nova fascikla', vid_folder_ph: 'npr. Shadowing, Gramatika, Podkasti', vid_create: 'Napravi fasciklu', vid_link: 'Link', vid_name: 'Naziv (nije obavezno)', vid_folder: 'Fascikla', vid_save: 'Sačuvaj link', vid_none: 'Još nema fascikli. Napravi je gore.', vid_bad: 'Ovo ne liči na link.', vid_dup: 'Ovaj link je već u toj fascikli.', vid_dupf: 'Fascikla sa tim imenom već postoji.', vid_saved: 'Sačuvano.', vid_open: 'Otvori', vid_fdel: 'Obriši fasciklu', vid_empty: 'Fascikla je prazna.', vid_nofolder: 'Bez fascikle',
+    notes_lang: 'Koji jezik učiš?', l_pl: 'poljski', l_nl: 'holandski', l_it: 'italijanski', l_pt: 'portugalski', l_fi: 'finski', vid_entry: 'Linkovi u fasciklama: shadowing, gramatika, slušanje, podkasti.', vid_intro: 'Napravi fasciklu za svaku temu i u nju sačuvaj YouTube linkove.', vid_folder_new: 'Nova fascikla', vid_folder_ph: 'npr. Shadowing, Gramatika, Podkasti', vid_create: 'Napravi fasciklu', vid_link: 'Link', vid_name: 'Naziv (nije obavezno)', vid_folder: 'Fascikla', vid_save: 'Sačuvaj link', vid_none: 'Još nema fascikli. Napravi je gore.', vid_bad: 'Ovo ne liči na link.', vid_dup: 'Ovaj link je već u toj fascikli.', vid_dupf: 'Fascikla sa tim imenom već postoji.', vid_saved: 'Sačuvano.', vid_open: 'Otvori', vid_fdel: 'Obriši fasciklu', vid_empty: 'Fascikla je prazna.', vid_nofolder: 'Bez fascikle',
     drop_t: 'Dodaj beleške sa časa', drop_d: 'Izaberi PDF ili .md fajlove ili ih prevuci ovde',
     nosave: 'Ovaj pregledač ne dozvoljava stranici da bilo šta sačuva, pa će lekcije nestati kad zatvoriš karticu.',
     lessons: 'Lekcije', mixed: 'Sve lekcije zajedno', mixed_sub: '{c} iz {n} {w}',
@@ -802,7 +802,7 @@ var I18N = {
     return f[cat] || f.other;
   }
   Parser.t = t;
-  var VERSION_LABEL = '21, 16 Nov';
+  var VERSION_LABEL = '22, 17 Nov';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
@@ -843,7 +843,7 @@ var I18N = {
 
   /* ---------- voices: the phone's own text-to-speech ---------- */
   var SPEECH = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
-  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru'], de: ['de-DE', 'de-AT', 'de-CH', 'de'], sr: ['sr-RS', 'sr-Latn-RS', 'sr', 'hr-HR', 'bs-BA', 'hr', 'bs'], fr: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr'], pl: ['pl-PL', 'pl'], he: ['he-IL', 'iw-IL', 'he', 'iw']};
+  var LOCALES = {en: ['en-GB', 'en-US', 'en-AU', 'en-IE', 'en'], es: ['es-ES', 'es-MX', 'es-US', 'es-419', 'es'], ru: ['ru-RU', 'ru'], de: ['de-DE', 'de-AT', 'de-CH', 'de'], sr: ['sr-RS', 'sr-Latn-RS', 'sr', 'hr-HR', 'bs-BA', 'hr', 'bs'], fr: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr'], pl: ['pl-PL', 'pl'], he: ['he-IL', 'iw-IL', 'he', 'iw'], nl: ['nl-NL', 'nl-BE', 'nl'], it: ['it-IT', 'it-CH', 'it'], pt: ['pt-PT', 'pt-BR', 'pt'], fi: ['fi-FI', 'fi']};
   function LN(lg){ return t('l_' + lg); }
   var SLOW = false;
   try { SLOW = localStorage.getItem('revision-room:slow') === '1'; } catch (e) {}
@@ -1101,8 +1101,8 @@ var I18N = {
     return l ? {id: l.id, title: l.title, items: withLang(l), lang: lessonLang(l)} : null;
   }
   function addLang(){ return LOCALES[S.addLang] ? S.addLang : 'en'; }
-  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский', de: 'Deutsch', sr: 'Srpski', fr: 'Français', pl: 'Polski', he: 'עברית'};
-  var LEARN = ['en', 'es', 'ru', 'de', 'sr', 'fr', 'pl', 'he'];
+  var LANG_NAMES = {en: 'English', es: 'Español', ru: 'Русский', de: 'Deutsch', sr: 'Srpski', fr: 'Français', pl: 'Polski', he: 'עברית', nl: 'Nederlands', it: 'Italiano', pt: 'Português', fi: 'Suomi'};
+  var LEARN = ['en', 'es', 'ru', 'de', 'sr', 'fr', 'pl', 'he', 'nl', 'it', 'pt', 'fi'];
   function langSelect(id, val, off){
     return '<select class="sel" id="' + id + '">' + LEARN.map(function(k){ return '<option value="' + k + '"' + (val === k ? ' selected' : '') + '>' + LANG_NAMES[k] + '</option>'; }).join('') + (off ? '<option value="off"' + (val === 'off' ? ' selected' : '') + '>' + esc(t('off')) + '</option>' : '') + '</select>';
   }
