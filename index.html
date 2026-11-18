@@ -392,9 +392,39 @@ var Parser = (function () {
     return Object.keys(count).filter(function (k) { return count[k] >= 2; }).map(Number);
   }
 
+  /* A cell that wraps onto two lines next to a one-line cell is often centred vertically, so the lines sit at different heights.
+     Glue such a block back into one two-cell row. */
+  function mergeCentered(lines) {
+    var lc = {}, rc = {};
+    lines.forEach(function (L) { if (L && L.cells.length === 2) { var a = Math.round(L.cells[0].x), b = Math.round(L.cells[1].x); lc[a] = (lc[a] || 0) + 1; rc[b] = (rc[b] || 0) + 1; } });
+    function top(o) { var best = null, n = 1; Object.keys(o).forEach(function (k) { if (o[k] > n) { n = o[k]; best = +k; } }); return best; }
+    var lx = top(lc), rx = top(rc);
+    if (lx === null || rx === null) return lines;
+    function side(c) { return Math.abs(c.x - lx) < 3 ? 'l' : Math.abs(c.x - rx) < 3 ? 'r' : null; }
+    var out = [], i = 0;
+    while (i < lines.length) {
+      var L = lines[i];
+      if (!L || !L.cells.length || L.cells.some(function (c) { return !side(c); })) { out.push(L); i++; continue; }
+      var run = [L], j = i + 1;
+      while (j < lines.length && lines[j] && lines[j].cells.length && !lines[j].cells.some(function (c) { return !side(c); }) && run[run.length - 1].y - lines[j].y < 1.5 * lines[j].h) { run.push(lines[j]); j++; }
+      var single = run.some(function (R) { return R.cells.length === 1; });
+      if (run.length > 1 && single) {
+        var A = [], B = [];
+        run.forEach(function (R) { R.cells.forEach(function (c) { (side(c) === 'l' ? A : B).push(c.text); }); });
+        if (A.length && B.length) {
+          out.push({ y: run[0].y, h: Math.max.apply(null, run.map(function (R) { return R.h; })), cells: [{ x: lx, text: A.join(' ').replace(/\s+/g, ' ').trim(), end: lx }, { x: rx, text: B.join(' ').replace(/\s+/g, ' ').trim(), end: rx }] });
+          i = j; continue;
+        }
+      }
+      out.push(L); i++;
+    }
+    return out;
+  }
+
   function parsePdf(pages) {
     var lines = [];
     pages.forEach(function (its) { lines = lines.concat(toLines(its, columnXs(toLines(its)))); lines.push(null); });
+    lines = mergeCentered(lines);
     var hs = lines.filter(Boolean).map(function (l) { return l.h; }).sort(function (a, b) { return a - b; });
     var med = hs.length ? hs[Math.floor(hs.length / 2)] : 10;
     var rows = [], last = null, lastY = 0, inTable = false, vocabH = 0;
@@ -802,13 +832,13 @@ var I18N = {
     return f[cat] || f.other;
   }
   Parser.t = t;
-  var VERSION_LABEL = '23, 17 Nov';
+  var VERSION_LABEL = '25, 18 Nov';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
   try {
     var raw = localStorage.getItem(LIB_KEY);
-    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; if (p.shadow && Array.isArray(p.shadow.vids)) S.shadow = p.shadow; if (p.fold && typeof p.fold === 'object') S.fold = p.fold; } }
+    if (raw) { var p = JSON.parse(raw); if (p && Array.isArray(p.lessons)) { S.lessons = p.lessons; S.last = p.last || {}; if (p.addLang) S.addLang = p.addLang; if (p.shadow && Array.isArray(p.shadow.vids)) S.shadow = p.shadow; if (p.fold && typeof p.fold === 'object') S.fold = p.fold; if (p.seen && typeof p.seen === 'object') S.seen = p.seen; } }
   } catch (e) { canSave = false; }
   function persist(){ try { localStorage.setItem(LIB_KEY, JSON.stringify(S)); canSave = true; } catch (e) { canSave = false; } }
 
@@ -1437,6 +1467,23 @@ var I18N = {
     {id: 'match', name: 'm_match', min: 3, count: function(d){ return plural(Math.min(12, d.items.length), 'pair'); }},
     {id: 'listen', name: 'm_listen', min: 1, count: function(d){ return t('per_round', {n: Math.min(10, listenItems(d).length)}); }}
   ];
+  /* Pick n items, preferring ones not used in the last rounds, so repeat sessions bring new sentences. */
+  function fresh(key, pool, n){
+    var seen = (S.seen || (S.seen = {}))[key] || [];
+    function k(it){ return it.a || it.src || it.q || JSON.stringify(it); }
+    var unseen = pool.filter(function(it){ return seen.indexOf(k(it)) < 0; });
+    var pick = sample(unseen, n);
+    if (pick.length < n) {
+      /* everything has been heard: start a new cycle, keeping the items just picked out of the first picks */
+      var rest = sample(pool.filter(function(it){ return pick.indexOf(it) < 0; }), n - pick.length);
+      pick = pick.concat(rest);
+      seen = [];
+    }
+    pick.forEach(function(it){ seen.push(k(it)); });
+    S.seen[key] = seen.slice(-400);
+    persist();
+    return shuffle(pick);
+  }
   function listenItems(d){ return d.items.filter(function(it){ return SPEECH && LOCALES[it.l] && allVoices().length > 0 && !!pickVoice(it.l); }); }
   function menu(deck){
     cur = deck; setView('lessons');
@@ -1591,7 +1638,7 @@ var I18N = {
   /* ---------- Listening: hear the phrase, type it ---------- */
   function fold(s){ return norm(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0451/g, '\u0435'); }
   function listen(deck, list){
-    var items = list || sample(listenItems(deck), 10), n = items.length, i = 0, right = 0, wrong = [];
+    var items = list || fresh('listen:' + deck.id, listenItems(deck), 10), n = items.length, i = 0, right = 0, wrong = [];
     var ICON = '<svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
     function draw(){
       if (!n || i >= n) {
