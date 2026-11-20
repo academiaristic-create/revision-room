@@ -1,5 +1,5 @@
 /* Revision Room service worker: offline shell + share target */
-var VERSION = 'rr-v25';
+var VERSION = 'rr-v28';
 var SHELL = ['./', 'index.html', 'manifest.webmanifest', 'pdf.min.js', 'pdf.worker.min.js', 'config.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 var KEEP = [VERSION, 'rr-shared', 'rr-fonts'];
 self.addEventListener('install', function(e){

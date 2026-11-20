@@ -272,6 +272,13 @@ input.gap.no{background:var(--bad-bg);border-bottom-color:var(--bad);color:var(-
 }
 
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.gt td{vertical-align:top}.gt .aux{color:var(--muted);font-size:13px;font-weight:400}.gt th{position:sticky;top:0;background:var(--surface)}
+input.gin{font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;min-height:52px;font-size:19px}
+input.gin:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+input.gin.ok{background:var(--good-bg);border-color:var(--good);color:var(--good)}
+input.gin.no{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.fb .fix{display:block;margin-top:2px}
 </style>
 
 <div class="shell" id="shell">
@@ -513,7 +520,7 @@ var I18N = {
     your_lessons: 'My lessons', l_he: 'Hebrew', menu_btn: 'Menu',
     vid_title: 'My videos',
     sub: 'Add the notes from each lesson (PDF or Markdown). The chunks and vocabulary in them become flashcards, gap-fill, a quiz and matching.',
-    notes_lang: 'What language are you learning?', l_pl: 'Polish', l_nl: 'Dutch', l_it: 'Italian', l_pt: 'Portuguese', l_fi: 'Finnish', vid_entry: 'Save links in folders: shadowing, grammar, listening, podcasts.', vid_intro: 'Make a folder for each topic, then save your YouTube links in it.', vid_folder_new: 'New folder', vid_folder_ph: 'e.g. Shadowing, Grammar, Podcasts', vid_create: 'Create folder', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Folder', vid_save: 'Save link', vid_none: 'No folders yet. Create one above.', vid_bad: 'That doesn’t look like a link.', vid_dup: 'This link is already in that folder.', vid_dupf: 'You already have a folder with that name.', vid_saved: 'Saved.', vid_open: 'Open', vid_fdel: 'Delete folder', vid_empty: 'Empty folder.', vid_nofolder: 'No folder',
+    notes_lang: 'What language are you learning?', l_pl: 'Polish', nav_gram: 'My grammar', gram_sub: 'Reference tables and practice, built into the app. No files needed.', gram_irreg: 'Irregular verbs', gram_irreg_sub: 'All three forms in a table, then type them from memory.', g_table: 'Table', g_practice: 'Practice', g_search: 'Search verbs', g_n_verbs: '{n} verbs', g_type_forms: 'Type the missing forms of each verb.', g_start: 'Start practice (10 verbs)', g_hint_de: 'You can type Ä, Ö, Ü and ß as ae, oe, ue and ss.', g_hint_de2: 'The participle works with or without haben/sein.', g_verbs_ok: 'verbs correct', g_hint_nl: 'The participle works with or without heeft/is.', g_hint_fr: 'Accents count. You can add the pronoun (je, tu, il...) or leave it out.', g_forms_ok: 'forms correct', g_type_one: 'Type the correct verb form.', g_hint_es: 'Accents count: pidió, not pidio.', l_nl: 'Dutch', l_it: 'Italian', l_pt: 'Portuguese', l_fi: 'Finnish', vid_entry: 'Save links in folders: shadowing, grammar, listening, podcasts.', vid_intro: 'Make a folder for each topic, then save your YouTube links in it.', vid_folder_new: 'New folder', vid_folder_ph: 'e.g. Shadowing, Grammar, Podcasts', vid_create: 'Create folder', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Folder', vid_save: 'Save link', vid_none: 'No folders yet. Create one above.', vid_bad: 'That doesn’t look like a link.', vid_dup: 'This link is already in that folder.', vid_dupf: 'You already have a folder with that name.', vid_saved: 'Saved.', vid_open: 'Open', vid_fdel: 'Delete folder', vid_empty: 'Empty folder.', vid_nofolder: 'No folder',
     drop_t: 'Add lesson notes', drop_d: 'Choose PDF or .md files, or drop them here',
     nosave: 'This browser is not letting the page save anything, so your lessons will be gone when you close the tab.',
     lessons: 'Lessons', mixed: 'All lessons mixed', mixed_sub: '{c} from {n} {w}',
@@ -573,7 +580,7 @@ var I18N = {
     your_lessons: 'Мои уроки', l_he: 'иврит', menu_btn: 'Меню',
     vid_title: 'Мои видео',
     sub: 'Добавляйте заметки с каждого урока (PDF или Markdown). Фразы и лексика из них превращаются в карточки, упражнения с пропусками, тест и сопоставление.',
-    notes_lang: 'Какой язык вы изучаете?', l_pl: 'польский', l_nl: 'нидерландский', l_it: 'итальянский', l_pt: 'португальский', l_fi: 'финский', vid_entry: 'Ссылки в папках: шэдоуинг, грамматика, аудирование, подкасты.', vid_intro: 'Создайте папку для каждой темы и сохраняйте в неё ссылки на YouTube.', vid_folder_new: 'Новая папка', vid_folder_ph: 'например: Шэдоуинг, Грамматика, Подкасты', vid_create: 'Создать папку', vid_link: 'Ссылка', vid_name: 'Название (по желанию)', vid_folder: 'Папка', vid_save: 'Сохранить ссылку', vid_none: 'Папок пока нет. Создайте первую выше.', vid_bad: 'Это не похоже на ссылку.', vid_dup: 'Эта ссылка уже есть в этой папке.', vid_dupf: 'Папка с таким названием уже есть.', vid_saved: 'Сохранено.', vid_open: 'Открыть', vid_fdel: 'Удалить папку', vid_empty: 'Папка пуста.', vid_nofolder: 'Без папки',
+    notes_lang: 'Какой язык вы изучаете?', l_pl: 'польский', nav_gram: 'Моя грамматика', gram_sub: 'Таблицы и практика прямо в приложении. Файлы не нужны.', gram_irreg: 'Неправильные глаголы', gram_irreg_sub: 'Все три формы в таблице, потом вписываете их по памяти.', g_table: 'Таблица', g_practice: 'Практика', g_search: 'Найти глагол', g_n_verbs: '{n} глаголов', g_type_forms: 'Впишите недостающие формы каждого глагола.', g_start: 'Начать практику (10 глаголов)', g_hint_de: 'Ä, Ö, Ü и ß можно писать как ae, oe, ue и ss.', g_hint_de2: 'Причастие можно писать с haben/sein или без.', g_verbs_ok: 'глаголов верно', g_hint_nl: 'Причастие можно писать с heeft/is или без.', g_hint_fr: 'Ударения считаются. Местоимение (je, tu, il...) можно писать или не писать.', g_forms_ok: 'форм верно', g_type_one: 'Впишите правильную форму глагола.', g_hint_es: 'Ударения считаются: pidió, а не pidio.', l_nl: 'нидерландский', l_it: 'итальянский', l_pt: 'португальский', l_fi: 'финский', vid_entry: 'Ссылки в папках: шэдоуинг, грамматика, аудирование, подкасты.', vid_intro: 'Создайте папку для каждой темы и сохраняйте в неё ссылки на YouTube.', vid_folder_new: 'Новая папка', vid_folder_ph: 'например: Шэдоуинг, Грамматика, Подкасты', vid_create: 'Создать папку', vid_link: 'Ссылка', vid_name: 'Название (по желанию)', vid_folder: 'Папка', vid_save: 'Сохранить ссылку', vid_none: 'Папок пока нет. Создайте первую выше.', vid_bad: 'Это не похоже на ссылку.', vid_dup: 'Эта ссылка уже есть в этой папке.', vid_dupf: 'Папка с таким названием уже есть.', vid_saved: 'Сохранено.', vid_open: 'Открыть', vid_fdel: 'Удалить папку', vid_empty: 'Папка пуста.', vid_nofolder: 'Без папки',
     drop_t: 'Добавить заметки урока', drop_d: 'Выберите PDF или .md файлы или перетащите их сюда',
     nosave: 'Этот браузер не даёт странице ничего сохранять, поэтому уроки пропадут после закрытия вкладки.',
     lessons: 'Уроки', mixed: 'Все уроки вместе', mixed_sub: '{c} из {n} {w}',
@@ -634,7 +641,7 @@ var I18N = {
     your_lessons: 'Mis lecciones', l_he: 'hebreo', menu_btn: 'Menú',
     vid_title: 'Mis vídeos',
     sub: 'Añade los apuntes de cada clase (PDF o Markdown). Las expresiones y el vocabulario se convierten en tarjetas, huecos por rellenar, un test y emparejar.',
-    notes_lang: '¿Qué idioma estás aprendiendo?', l_pl: 'polaco', l_nl: 'neerlandés', l_it: 'italiano', l_pt: 'portugués', l_fi: 'finés', vid_entry: 'Enlaces en carpetas: shadowing, gramática, escucha, pódcast.', vid_intro: 'Crea una carpeta para cada tema y guarda en ella tus enlaces de YouTube.', vid_folder_new: 'Carpeta nueva', vid_folder_ph: 'p. ej. Shadowing, Gramática, Pódcast', vid_create: 'Crear carpeta', vid_link: 'Enlace', vid_name: 'Nombre (opcional)', vid_folder: 'Carpeta', vid_save: 'Guardar enlace', vid_none: 'Aún no hay carpetas. Crea una arriba.', vid_bad: 'Eso no parece un enlace.', vid_dup: 'Este enlace ya está en esa carpeta.', vid_dupf: 'Ya tienes una carpeta con ese nombre.', vid_saved: 'Guardado.', vid_open: 'Abrir', vid_fdel: 'Borrar carpeta', vid_empty: 'Carpeta vacía.', vid_nofolder: 'Sin carpeta',
+    notes_lang: '¿Qué idioma estás aprendiendo?', l_pl: 'polaco', nav_gram: 'Mi gramática', gram_sub: 'Tablas y práctica dentro de la app. No hacen falta archivos.', gram_irreg: 'Verbos irregulares', gram_irreg_sub: 'Las tres formas en una tabla y luego a escribirlas de memoria.', g_table: 'Tabla', g_practice: 'Práctica', g_search: 'Buscar verbo', g_n_verbs: '{n} verbos', g_type_forms: 'Escribe las formas que faltan de cada verbo.', g_start: 'Empezar práctica (10 verbos)', g_hint_de: 'Puedes escribir Ä, Ö, Ü y ß como ae, oe, ue y ss.', g_hint_de2: 'El participio vale con o sin haben/sein.', g_verbs_ok: 'verbos correctos', g_hint_nl: 'El participio vale con o sin heeft/is.', g_hint_fr: 'Los acentos cuentan. Puedes añadir el pronombre (je, tu, il...) o no.', g_forms_ok: 'formas correctas', g_type_one: 'Escribe la forma correcta del verbo.', g_hint_es: 'Las tildes cuentan: pidió, no pidio.', l_nl: 'neerlandés', l_it: 'italiano', l_pt: 'portugués', l_fi: 'finés', vid_entry: 'Enlaces en carpetas: shadowing, gramática, escucha, pódcast.', vid_intro: 'Crea una carpeta para cada tema y guarda en ella tus enlaces de YouTube.', vid_folder_new: 'Carpeta nueva', vid_folder_ph: 'p. ej. Shadowing, Gramática, Pódcast', vid_create: 'Crear carpeta', vid_link: 'Enlace', vid_name: 'Nombre (opcional)', vid_folder: 'Carpeta', vid_save: 'Guardar enlace', vid_none: 'Aún no hay carpetas. Crea una arriba.', vid_bad: 'Eso no parece un enlace.', vid_dup: 'Este enlace ya está en esa carpeta.', vid_dupf: 'Ya tienes una carpeta con ese nombre.', vid_saved: 'Guardado.', vid_open: 'Abrir', vid_fdel: 'Borrar carpeta', vid_empty: 'Carpeta vacía.', vid_nofolder: 'Sin carpeta',
     drop_t: 'Añadir apuntes de clase', drop_d: 'Elige archivos PDF o .md, o suéltalos aquí',
     nosave: 'Este navegador no deja que la página guarde nada, así que tus lecciones se perderán al cerrar la pestaña.',
     lessons: 'Lecciones', mixed: 'Todas las lecciones juntas', mixed_sub: '{c} de {n} {w}',
@@ -694,7 +701,7 @@ var I18N = {
     your_lessons: 'Meine Lektionen', l_he: 'Hebräisch', menu_btn: 'Menü',
     vid_title: 'Meine Videos',
     sub: 'Füge die Notizen jeder Stunde hinzu (PDF oder Markdown). Aus den Wendungen und dem Wortschatz werden Karteikarten, Lückentexte, ein Quiz und Zuordnen.',
-    notes_lang: 'Welche Sprache lernst du?', l_pl: 'Polnisch', l_nl: 'Niederländisch', l_it: 'Italienisch', l_pt: 'Portugiesisch', l_fi: 'Finnisch', vid_entry: 'Links in Ordnern: Shadowing, Grammatik, Hören, Podcasts.', vid_intro: 'Lege für jedes Thema einen Ordner an und speichere darin deine YouTube-Links.', vid_folder_new: 'Neuer Ordner', vid_folder_ph: 'z. B. Shadowing, Grammatik, Podcasts', vid_create: 'Ordner erstellen', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Ordner', vid_save: 'Link speichern', vid_none: 'Noch keine Ordner. Erstelle oben einen.', vid_bad: 'Das sieht nicht nach einem Link aus.', vid_dup: 'Dieser Link ist schon in diesem Ordner.', vid_dupf: 'Einen Ordner mit diesem Namen gibt es schon.', vid_saved: 'Gespeichert.', vid_open: 'Öffnen', vid_fdel: 'Ordner löschen', vid_empty: 'Ordner ist leer.', vid_nofolder: 'Ohne Ordner',
+    notes_lang: 'Welche Sprache lernst du?', l_pl: 'Polnisch', nav_gram: 'Meine Grammatik', gram_sub: 'Tabellen und Übungen direkt in der App. Keine Dateien nötig.', gram_irreg: 'Unregelmäßige Verben', gram_irreg_sub: 'Alle drei Formen in einer Tabelle, danach aus dem Gedächtnis schreiben.', g_table: 'Tabelle', g_practice: 'Übung', g_search: 'Verb suchen', g_n_verbs: '{n} Verben', g_type_forms: 'Schreibe die fehlenden Formen jedes Verbs.', g_start: 'Übung starten (10 Verben)', g_hint_de: 'Ä, Ö, Ü und ß darfst du als ae, oe, ue und ss schreiben.', g_hint_de2: 'Das Partizip gilt mit oder ohne haben/sein.', g_verbs_ok: 'Verben richtig', g_hint_nl: 'Das Partizip gilt mit oder ohne heeft/is.', g_hint_fr: 'Akzente zählen. Das Pronomen (je, tu, il...) kannst du schreiben oder weglassen.', g_forms_ok: 'Formen richtig', g_type_one: 'Schreibe die richtige Verbform.', g_hint_es: 'Akzente zählen: pidió, nicht pidio.', l_nl: 'Niederländisch', l_it: 'Italienisch', l_pt: 'Portugiesisch', l_fi: 'Finnisch', vid_entry: 'Links in Ordnern: Shadowing, Grammatik, Hören, Podcasts.', vid_intro: 'Lege für jedes Thema einen Ordner an und speichere darin deine YouTube-Links.', vid_folder_new: 'Neuer Ordner', vid_folder_ph: 'z. B. Shadowing, Grammatik, Podcasts', vid_create: 'Ordner erstellen', vid_link: 'Link', vid_name: 'Name (optional)', vid_folder: 'Ordner', vid_save: 'Link speichern', vid_none: 'Noch keine Ordner. Erstelle oben einen.', vid_bad: 'Das sieht nicht nach einem Link aus.', vid_dup: 'Dieser Link ist schon in diesem Ordner.', vid_dupf: 'Einen Ordner mit diesem Namen gibt es schon.', vid_saved: 'Gespeichert.', vid_open: 'Öffnen', vid_fdel: 'Ordner löschen', vid_empty: 'Ordner ist leer.', vid_nofolder: 'Ohne Ordner',
     drop_t: 'Stundennotizen hinzufügen', drop_d: 'PDF- oder .md-Dateien auswählen oder hierher ziehen',
     nosave: 'Dieser Browser erlaubt der Seite kein Speichern, deine Lektionen sind also weg, sobald du den Tab schließt.',
     lessons: 'Lektionen', mixed: 'Alle Lektionen gemischt', mixed_sub: '{c} aus {n} {w}',
@@ -754,7 +761,7 @@ var I18N = {
     your_lessons: 'Moje lekcije', l_he: 'hebrejski', menu_btn: 'Meni',
     vid_title: 'Moji snimci',
     sub: 'Dodaj beleške sa svakog časa (PDF ili Markdown). Izrazi i vokabular iz njih postaju kartice, popunjavanje praznina, kviz i spajanje.',
-    notes_lang: 'Koji jezik učiš?', l_pl: 'poljski', l_nl: 'holandski', l_it: 'italijanski', l_pt: 'portugalski', l_fi: 'finski', vid_entry: 'Linkovi u fasciklama: shadowing, gramatika, slušanje, podkasti.', vid_intro: 'Napravi fasciklu za svaku temu i u nju sačuvaj YouTube linkove.', vid_folder_new: 'Nova fascikla', vid_folder_ph: 'npr. Shadowing, Gramatika, Podkasti', vid_create: 'Napravi fasciklu', vid_link: 'Link', vid_name: 'Naziv (nije obavezno)', vid_folder: 'Fascikla', vid_save: 'Sačuvaj link', vid_none: 'Još nema fascikli. Napravi je gore.', vid_bad: 'Ovo ne liči na link.', vid_dup: 'Ovaj link je već u toj fascikli.', vid_dupf: 'Fascikla sa tim imenom već postoji.', vid_saved: 'Sačuvano.', vid_open: 'Otvori', vid_fdel: 'Obriši fasciklu', vid_empty: 'Fascikla je prazna.', vid_nofolder: 'Bez fascikle',
+    notes_lang: 'Koji jezik učiš?', l_pl: 'poljski', nav_gram: 'Moja gramatika', gram_sub: 'Tabele i vežbe direktno u aplikaciji. Fajlovi nisu potrebni.', gram_irreg: 'Nepravilni glagoli', gram_irreg_sub: 'Sva tri oblika u tabeli, pa ih upiši po sećanju.', g_table: 'Tabela', g_practice: 'Vežba', g_search: 'Traži glagol', g_n_verbs: '{n} glagola', g_type_forms: 'Upiši oblike koji nedostaju za svaki glagol.', g_start: 'Počni vežbu (10 glagola)', g_hint_de: 'Ä, Ö, Ü i ß možeš pisati kao ae, oe, ue i ss.', g_hint_de2: 'Particip važi sa haben/sein ili bez njih.', g_verbs_ok: 'glagola tačno', g_hint_nl: 'Particip važi sa heeft/is ili bez njih.', g_hint_fr: 'Akcenti se računaju. Zamenicu (je, tu, il...) možeš pisati ili izostaviti.', g_forms_ok: 'oblika tačno', g_type_one: 'Upiši tačan oblik glagola.', g_hint_es: 'Akcenti se računaju: pidió, a ne pidio.', l_nl: 'holandski', l_it: 'italijanski', l_pt: 'portugalski', l_fi: 'finski', vid_entry: 'Linkovi u fasciklama: shadowing, gramatika, slušanje, podkasti.', vid_intro: 'Napravi fasciklu za svaku temu i u nju sačuvaj YouTube linkove.', vid_folder_new: 'Nova fascikla', vid_folder_ph: 'npr. Shadowing, Gramatika, Podkasti', vid_create: 'Napravi fasciklu', vid_link: 'Link', vid_name: 'Naziv (nije obavezno)', vid_folder: 'Fascikla', vid_save: 'Sačuvaj link', vid_none: 'Još nema fascikli. Napravi je gore.', vid_bad: 'Ovo ne liči na link.', vid_dup: 'Ovaj link je već u toj fascikli.', vid_dupf: 'Fascikla sa tim imenom već postoji.', vid_saved: 'Sačuvano.', vid_open: 'Otvori', vid_fdel: 'Obriši fasciklu', vid_empty: 'Fascikla je prazna.', vid_nofolder: 'Bez fascikle',
     drop_t: 'Dodaj beleške sa časa', drop_d: 'Izaberi PDF ili .md fajlove ili ih prevuci ovde',
     nosave: 'Ovaj pregledač ne dozvoljava stranici da bilo šta sačuva, pa će lekcije nestati kad zatvoriš karticu.',
     lessons: 'Lekcije', mixed: 'Sve lekcije zajedno', mixed_sub: '{c} iz {n} {w}',
@@ -832,7 +839,7 @@ var I18N = {
     return f[cat] || f.other;
   }
   Parser.t = t;
-  var VERSION_LABEL = '25, 18 Nov';
+  var VERSION_LABEL = '28, 20 Nov';
   var FB_KEY = (window.RR_CONFIG && window.RR_CONFIG.feedbackKey) || '';
   var FB_URL = (window.RR_CONFIG && /^https:\/\//.test(window.RR_CONFIG.feedbackUrl || '') && window.RR_CONFIG.feedbackUrl) || '';
   var canSave = true, cur = null, notice = null, deferredInstall = null;
@@ -992,6 +999,12 @@ var I18N = {
     var tg;
     if (e.target.closest('[data-back]')) { stopSpeech(); var bd = cur && deckOf(cur.id); if (bd) menu(bd); else library(); return; }
     if (e.target.closest('[data-lib]')) { stopSpeech(); library(); return; }
+    if ((tg = e.target.closest('[data-gram]'))) { grammar(); return; }
+    if ((tg = e.target.closest('[data-gopen]'))) { gm = 'table'; irreg(); return; }
+    if ((tg = e.target.closest('[data-glang]'))) { gl = tg.dataset.glang; irreg(); return; }
+    if ((tg = e.target.closest('[data-gtense]'))) { GT[gl] = tg.dataset.gtense; irreg(); return; }
+    if ((tg = e.target.closest('[data-gmode]'))) { gm = tg.dataset.gmode; irreg(); return; }
+    if ((tg = e.target.closest('[data-gstart]'))) { irregPractice(); return; }
     if (e.target.closest('[data-feedback]')) { if (FB_URL) window.open(FB_URL, '_blank', 'noopener'); else feedback(); return; }
     if ((tg = e.target.closest('[data-mode]'))) { run(tg.dataset.mode); return; }
     if ((tg = e.target.closest('[data-open]'))) { openLesson(tg.dataset.open); return; }
@@ -1185,6 +1198,215 @@ var I18N = {
     });
   }
 
+  /* ---------- My grammar: irregular verbs (built in, no files needed) ---------- */
+  var IRR_EN = ('arise|arose|arisen;awake|awoke|awoken;be|was/were|been;bear|bore|borne;beat|beat|beaten;become|became|become;begin|began|begun;bend|bent|bent;bet|bet|bet;bind|bound|bound;bite|bit|bitten;bleed|bled|bled;blow|blew|blown;break|broke|broken;bring|brought|brought;build|built|built;burn|burnt/burned|burnt/burned;buy|bought|bought;catch|caught|caught;choose|chose|chosen;come|came|come;cost|cost|cost;cut|cut|cut;deal|dealt|dealt;dig|dug|dug;do|did|done;draw|drew|drawn;dream|dreamt/dreamed|dreamt/dreamed;drink|drank|drunk;drive|drove|driven;eat|ate|eaten;fall|fell|fallen;feed|fed|fed;feel|felt|felt;fight|fought|fought;find|found|found;fly|flew|flown;forbid|forbade|forbidden;forget|forgot|forgotten;forgive|forgave|forgiven;freeze|froze|frozen;get|got|got/gotten;give|gave|given;go|went|gone/been;grow|grew|grown;hang|hung|hung;have|had|had;hear|heard|heard;hide|hid|hidden;hit|hit|hit;hold|held|held;hurt|hurt|hurt;keep|kept|kept;know|knew|known;lay|laid|laid;lead|led|led;learn|learnt/learned|learnt/learned;leave|left|left;lend|lent|lent;let|let|let;lie|lay|lain;light|lit|lit;lose|lost|lost;make|made|made;mean|meant|meant;meet|met|met;pay|paid|paid;put|put|put;quit|quit|quit;read|read|read;ride|rode|ridden;ring|rang|rung;rise|rose|risen;run|ran|run;say|said|said;see|saw|seen;seek|sought|sought;sell|sold|sold;send|sent|sent;set|set|set;shake|shook|shaken;shine|shone|shone;shoot|shot|shot;show|showed|shown;shut|shut|shut;sing|sang|sung;sink|sank|sunk;sit|sat|sat;sleep|slept|slept;slide|slid|slid;speak|spoke|spoken;spend|spent|spent;spin|spun|spun;spread|spread|spread;stand|stood|stood;steal|stole|stolen;stick|stuck|stuck;sting|stung|stung;strike|struck|struck;swear|swore|sworn;sweep|swept|swept;swim|swam|swum;swing|swung|swung;take|took|taken;teach|taught|taught;tear|tore|torn;tell|told|told;think|thought|thought;throw|threw|thrown;understand|understood|understood;wake|woke|woken;wear|wore|worn;weep|wept|wept;win|won|won;wind|wound|wound;write|wrote|written').split(';').map(function(r){ r = r.split('|'); return {f: [r[0], r[1], r[2]]}; });
+  /* German: infinitive | present er/sie/es (if the vowel changes) | Präteritum | Partizip II | auxiliary: h = haben, s = sein, hs = both */
+  var IRR_DE = ('backen|bäckt/backt|backte/buk|gebacken|h;beginnen||begann|begonnen|h;beißen||biss|gebissen|h;biegen||bog|gebogen|hs;bieten||bot|geboten|h;binden||band|gebunden|h;bitten||bat|gebeten|h;bleiben||blieb|geblieben|s;brechen|bricht|brach|gebrochen|hs;brennen||brannte|gebrannt|h;bringen||brachte|gebracht|h;denken||dachte|gedacht|h;dürfen|darf|durfte|gedurft|h;empfehlen|empfiehlt|empfahl|empfohlen|h;entscheiden||entschied|entschieden|h;essen|isst|aß|gegessen|h;fahren|fährt|fuhr|gefahren|s;fallen|fällt|fiel|gefallen|s;fangen|fängt|fing|gefangen|h;finden||fand|gefunden|h;fliegen||flog|geflogen|s;fliehen||floh|geflohen|s;fließen||floss|geflossen|s;fressen|frisst|fraß|gefressen|h;frieren||fror|gefroren|h;geben|gibt|gab|gegeben|h;gehen||ging|gegangen|s;gelingen||gelang|gelungen|s;gelten|gilt|galt|gegolten|h;genießen||genoss|genossen|h;geschehen|geschieht|geschah|geschehen|s;gewinnen||gewann|gewonnen|h;gießen||goss|gegossen|h;greifen||griff|gegriffen|h;haben|hat|hatte|gehabt|h;halten|hält|hielt|gehalten|h;hängen||hing|gehangen|h;heben||hob|gehoben|h;heißen||hieß|geheißen|h;helfen|hilft|half|geholfen|h;kennen||kannte|gekannt|h;klingen||klang|geklungen|h;kommen||kam|gekommen|s;können|kann|konnte|gekonnt|h;kriechen||kroch|gekrochen|s;laden|lädt|lud|geladen|h;lassen|lässt|ließ|gelassen|h;laufen|läuft|lief|gelaufen|s;leiden||litt|gelitten|h;leihen||lieh|geliehen|h;lesen|liest|las|gelesen|h;liegen||lag|gelegen|h;lügen||log|gelogen|h;meiden||mied|gemieden|h;messen|misst|maß|gemessen|h;mögen|mag|mochte|gemocht|h;müssen|muss|musste|gemusst|h;nehmen|nimmt|nahm|genommen|h;nennen||nannte|genannt|h;raten|rät|riet|geraten|h;reiten||ritt|geritten|hs;rennen||rannte|gerannt|s;riechen||roch|gerochen|h;rufen||rief|gerufen|h;scheinen||schien|geschienen|h;schieben||schob|geschoben|h;schlafen|schläft|schlief|geschlafen|h;schlagen|schlägt|schlug|geschlagen|h;schließen||schloss|geschlossen|h;schneiden||schnitt|geschnitten|h;schreiben||schrieb|geschrieben|h;schreien||schrie|geschrien|h;schweigen||schwieg|geschwiegen|h;schwimmen||schwamm|geschwommen|hs;sehen|sieht|sah|gesehen|h;sein|ist|war|gewesen|s;singen||sang|gesungen|h;sinken||sank|gesunken|s;sitzen||saß|gesessen|h;sollen|soll|sollte|gesollt|h;sprechen|spricht|sprach|gesprochen|h;springen||sprang|gesprungen|s;stechen|sticht|stach|gestochen|h;stehen||stand|gestanden|h;stehlen|stiehlt|stahl|gestohlen|h;steigen||stieg|gestiegen|s;sterben|stirbt|starb|gestorben|s;stoßen|stößt|stieß|gestoßen|h;streiten||stritt|gestritten|h;tragen|trägt|trug|getragen|h;treffen|trifft|traf|getroffen|h;treiben||trieb|getrieben|h;treten|tritt|trat|getreten|hs;trinken||trank|getrunken|h;tun|tut|tat|getan|h;verbieten||verbot|verboten|h;verbinden||verband|verbunden|h;vergessen|vergisst|vergaß|vergessen|h;vergleichen||verglich|verglichen|h;verlieren||verlor|verloren|h;vermeiden||vermied|vermieden|h;verschwinden||verschwand|verschwunden|s;verstehen||verstand|verstanden|h;wachsen|wächst|wuchs|gewachsen|s;waschen|wäscht|wusch|gewaschen|h;werden|wird|wurde|geworden|s;werfen|wirft|warf|geworfen|h;wissen|weiß|wusste|gewusst|h;wollen|will|wollte|gewollt|h;ziehen||zog|gezogen|hs;zwingen||zwang|gezwungen|h').split(';').map(function(r){ r = r.split('|'); return {f: [r[0], r[2], r[3]], pr: r[1], aux: r[4]}; });
+  function esRows(s, n){ return s.split(';').map(function(r){ r = r.split('|'); return {inf: r[0], forms: r.slice(1, 1 + n)}; }); }
+  /* Dutch: infinitive | imperfectum singular | imperfectum plural | voltooid deelwoord | auxiliary (h = hebben, z = zijn, hz = both) */
+  var IRR_NL = ('beginnen|begon|begonnen|begonnen|z;begrijpen|begreep|begrepen|begrepen|h;beslissen|besloot|besloten|besloten|h;bieden|bood|boden|geboden|h;bijten|beet|beten|gebeten|h;binden|bond|bonden|gebonden|h;blijven|bleef|bleven|gebleven|z;breken|brak|braken|gebroken|hz;brengen|bracht|brachten|gebracht|h;denken|dacht|dachten|gedacht|h;doen|deed|deden|gedaan|h;dragen|droeg|droegen|gedragen|h;drinken|dronk|dronken|gedronken|h;dwingen|dwong|dwongen|gedwongen|h;eten|at|aten|gegeten|h;gaan|ging|gingen|gegaan|z;gelden|gold|golden|gegolden|h;genieten|genoot|genoten|genoten|h;geven|gaf|gaven|gegeven|h;hangen|hing|hingen|gehangen|h;hebben|had|hadden|gehad|h;helpen|hielp|hielpen|geholpen|h;houden|hield|hielden|gehouden|h;kiezen|koos|kozen|gekozen|h;kijken|keek|keken|gekeken|h;komen|kwam|kwamen|gekomen|z;kopen|kocht|kochten|gekocht|h;krijgen|kreeg|kregen|gekregen|h;kunnen|kon|konden|gekund|h;laten|liet|lieten|gelaten|h;lezen|las|lazen|gelezen|h;liggen|lag|lagen|gelegen|h;lopen|liep|liepen|gelopen|hz;moeten|moest|moesten|gemoeten|h;mogen|mocht|mochten|gemogen|h;nemen|nam|namen|genomen|h;ontvangen|ontving|ontvingen|ontvangen|h;rijden|reed|reden|gereden|hz;roepen|riep|riepen|geroepen|h;schenken|schonk|schonken|geschonken|h;schieten|schoot|schoten|geschoten|h;schijnen|scheen|schenen|geschenen|h;schrijven|schreef|schreven|geschreven|h;slaan|sloeg|sloegen|geslagen|h;slapen|sliep|sliepen|geslapen|h;sluiten|sloot|sloten|gesloten|h;snijden|sneed|sneden|gesneden|h;spreken|sprak|spraken|gesproken|h;springen|sprong|sprongen|gesprongen|hz;staan|stond|stonden|gestaan|h;stelen|stal|stalen|gestolen|h;sterven|stierf|stierven|gestorven|z;stijgen|steeg|stegen|gestegen|z;treffen|trof|troffen|getroffen|h;trekken|trok|trokken|getrokken|hz;vallen|viel|vielen|gevallen|z;vangen|ving|vingen|gevangen|h;varen|voer|voeren|gevaren|hz;vechten|vocht|vochten|gevochten|h;vergelijken|vergeleek|vergeleken|vergeleken|h;vergeten|vergat|vergaten|vergeten|z;verbergen|verborg|verborgen|verborgen|h;verbieden|verbood|verboden|verboden|h;verliezen|verloor|verloren|verloren|h;vinden|vond|vonden|gevonden|h;vliegen|vloog|vlogen|gevlogen|hz;vriezen|vroor|vroren|gevroren|h;weten|wist|wisten|geweten|h;willen|wilde/wou|wilden/wouden|gewild|h;winnen|won|wonnen|gewonnen|h;worden|werd|werden|geworden|z;zien|zag|zagen|gezien|h;zijn|was|waren|geweest|z;zingen|zong|zongen|gezongen|h;zitten|zat|zaten|gezeten|h;zoeken|zocht|zochten|gezocht|h').split(';').map(function(r){ r = r.split('|'); return {f: [r[0], r[1], r[2], r[3]], aux: r[4]}; });
+  var ES_PRES = esRows('ser|soy|eres|es|somos|sois|son;estar|estoy|estás|está|estamos|estáis|están;ir|voy|vas|va|vamos|vais|van;haber|he|has|ha|hemos|habéis|han;tener|tengo|tienes|tiene|tenemos|tenéis|tienen;hacer|hago|haces|hace|hacemos|hacéis|hacen;decir|digo|dices|dice|decimos|decís|dicen;poder|puedo|puedes|puede|podemos|podéis|pueden;querer|quiero|quieres|quiere|queremos|queréis|quieren;saber|sé|sabes|sabe|sabemos|sabéis|saben;venir|vengo|vienes|viene|venimos|venís|vienen;poner|pongo|pones|pone|ponemos|ponéis|ponen;salir|salgo|sales|sale|salimos|salís|salen;dar|doy|das|da|damos|dais|dan;ver|veo|ves|ve|vemos|veis|ven;conocer|conozco|conoces|conoce|conocemos|conocéis|conocen;parecer|parezco|pareces|parece|parecemos|parecéis|parecen;traer|traigo|traes|trae|traemos|traéis|traen;oír|oigo|oyes|oye|oímos|oís|oyen;caer|caigo|caes|cae|caemos|caéis|caen;caber|quepo|cabes|cabe|cabemos|cabéis|caben;valer|valgo|vales|vale|valemos|valéis|valen;conducir|conduzco|conduces|conduce|conducimos|conducís|conducen;traducir|traduzco|traduces|traduce|traducimos|traducís|traducen;construir|construyo|construyes|construye|construimos|construís|construyen;pedir|pido|pides|pide|pedimos|pedís|piden;servir|sirvo|sirves|sirve|servimos|servís|sirven;seguir|sigo|sigues|sigue|seguimos|seguís|siguen;conseguir|consigo|consigues|consigue|conseguimos|conseguís|consiguen;elegir|elijo|eliges|elige|elegimos|elegís|eligen;repetir|repito|repites|repite|repetimos|repetís|repiten;vestir|visto|vistes|viste|vestimos|vestís|visten;dormir|duermo|duermes|duerme|dormimos|dormís|duermen;morir|muero|mueres|muere|morimos|morís|mueren;preferir|prefiero|prefieres|prefiere|preferimos|preferís|prefieren;sentir|siento|sientes|siente|sentimos|sentís|sienten;empezar|empiezo|empiezas|empieza|empezamos|empezáis|empiezan;pensar|pienso|piensas|piensa|pensamos|pensáis|piensan;entender|entiendo|entiendes|entiende|entendemos|entendéis|entienden;perder|pierdo|pierdes|pierde|perdemos|perdéis|pierden;cerrar|cierro|cierras|cierra|cerramos|cerráis|cierran;volver|vuelvo|vuelves|vuelve|volvemos|volvéis|vuelven;encontrar|encuentro|encuentras|encuentra|encontramos|encontráis|encuentran;recordar|recuerdo|recuerdas|recuerda|recordamos|recordáis|recuerdan;contar|cuento|cuentas|cuenta|contamos|contáis|cuentan;jugar|juego|juegas|juega|jugamos|jugáis|juegan;proteger|protejo|proteges|protege|protegemos|protegéis|protegen', 6);
+  var ES_INDEF = esRows('ser|fui|fuiste|fue|fuimos|fuisteis|fueron;ir|fui|fuiste|fue|fuimos|fuisteis|fueron;estar|estuve|estuviste|estuvo|estuvimos|estuvisteis|estuvieron;andar|anduve|anduviste|anduvo|anduvimos|anduvisteis|anduvieron;haber|hube|hubiste|hubo|hubimos|hubisteis|hubieron;tener|tuve|tuviste|tuvo|tuvimos|tuvisteis|tuvieron;hacer|hice|hiciste|hizo|hicimos|hicisteis|hicieron;decir|dije|dijiste|dijo|dijimos|dijisteis|dijeron;poder|pude|pudiste|pudo|pudimos|pudisteis|pudieron;querer|quise|quisiste|quiso|quisimos|quisisteis|quisieron;saber|supe|supiste|supo|supimos|supisteis|supieron;venir|vine|viniste|vino|vinimos|vinisteis|vinieron;poner|puse|pusiste|puso|pusimos|pusisteis|pusieron;caber|cupe|cupiste|cupo|cupimos|cupisteis|cupieron;dar|di|diste|dio|dimos|disteis|dieron;ver|vi|viste|vio|vimos|visteis|vieron;traer|traje|trajiste|trajo|trajimos|trajisteis|trajeron;conducir|conduje|condujiste|condujo|condujimos|condujisteis|condujeron;traducir|traduje|tradujiste|tradujo|tradujimos|tradujisteis|tradujeron;producir|produje|produjiste|produjo|produjimos|produjisteis|produjeron;oír|oí|oíste|oyó|oímos|oísteis|oyeron;caer|caí|caíste|cayó|caímos|caísteis|cayeron;leer|leí|leíste|leyó|leímos|leísteis|leyeron;creer|creí|creíste|creyó|creímos|creísteis|creyeron;construir|construí|construiste|construyó|construimos|construisteis|construyeron;huir|huí|huiste|huyó|huimos|huisteis|huyeron;pedir|pedí|pediste|pidió|pedimos|pedisteis|pidieron;servir|serví|serviste|sirvió|servimos|servisteis|sirvieron;seguir|seguí|seguiste|siguió|seguimos|seguisteis|siguieron;repetir|repetí|repetiste|repitió|repetimos|repetisteis|repitieron;vestir|vestí|vestiste|vistió|vestimos|vestisteis|vistieron;dormir|dormí|dormiste|durmió|dormimos|dormisteis|durmieron;morir|morí|moriste|murió|morimos|moristeis|murieron;preferir|preferí|preferiste|prefirió|preferimos|preferisteis|prefirieron;sentir|sentí|sentiste|sintió|sentimos|sentisteis|sintieron;empezar|empecé|empezaste|empezó|empezamos|empezasteis|empezaron;comenzar|comencé|comenzaste|comenzó|comenzamos|comenzasteis|comenzaron;almorzar|almorcé|almorzaste|almorzó|almorzamos|almorzasteis|almorzaron;buscar|busqué|buscaste|buscó|buscamos|buscasteis|buscaron;sacar|saqué|sacaste|sacó|sacamos|sacasteis|sacaron;tocar|toqué|tocaste|tocó|tocamos|tocasteis|tocaron;llegar|llegué|llegaste|llegó|llegamos|llegasteis|llegaron;pagar|pagué|pagaste|pagó|pagamos|pagasteis|pagaron;jugar|jugué|jugaste|jugó|jugamos|jugasteis|jugaron', 6);
+  var ES_PART = ('abrir|abierto;cubrir|cubierto;descubrir|descubierto;decir|dicho;predecir|predicho;contradecir|contradicho;escribir|escrito;describir|descrito;inscribir|inscrito;freír|frito;hacer|hecho;deshacer|deshecho;satisfacer|satisfecho;morir|muerto;poner|puesto;componer|compuesto;proponer|propuesto;suponer|supuesto;imponer|impuesto;oponer|opuesto;resolver|resuelto;disolver|disuelto;romper|roto;ver|visto;prever|previsto;volver|vuelto;devolver|devuelto;envolver|envuelto;revolver|revuelto').split(';').map(function(r){ r = r.split('|'); return {inf: r[0], part: r[1]}; });
+  var IRR = {
+    en: {kind: 'forms', name: 'English', list: IRR_EN, cols: ['Infinitive', 'Past simple', 'Past participle']},
+    de: {kind: 'forms', name: 'Deutsch', list: IRR_DE, cols: ['Infinitiv', 'Präteritum', 'Partizip II'],
+      aux: {k: 2, words: function(a){ return a === 's' ? ['ist'] : a === 'h' ? ['hat'] : ['ist', 'hat']; }, show: function(a){ return a === 's' ? 'ist' : a === 'h' ? 'hat' : 'ist / hat'; }},
+      first: '(er/sie/es)', hint: 'g_hint_de', hint2: 'g_hint_de2'},
+    nl: {kind: 'forms', name: 'Nederlands', list: IRR_NL, cols: ['Infinitief', 'Imperfectum (ik/hij)', 'Imperfectum (wij)', 'Voltooid deelwoord'],
+      aux: {k: 3, words: function(a){ return a === 'z' ? ['is'] : a === 'h' ? ['heeft'] : ['heeft', 'is']; }, show: function(a){ return a === 'z' ? 'is' : a === 'h' ? 'heeft' : 'heeft / is'; }},
+      hint: 'g_hint_nl'},
+    es: {kind: 'conj', name: 'Español', hint: 'g_hint_es', pers: ['yo', 'tú', 'él / ella', 'nosotros', 'vosotros', 'ellos'], tenses: [['pres', 'Presente'], ['indef', 'Indefinido'], ['perf', 'Perfecto / Pluscuamp.']]},
+    fr: {kind: 'conj', name: 'Français', hint: 'g_hint_fr', pers: ['je', 'tu', 'il / elle', 'nous', 'vous', 'ils / elles'], tenses: [['pres', 'Présent'], ['pc', 'Passé composé'], ['fut', 'Futur simple']]}
+  };
+  var gl = 'en', gm = 'table', gq = '', GT = {es: 'pres', fr: 'pres'};
+  function gnorm(s){ return norm(s).replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss'); }
+  /* ---- languages with a row of forms (English, German, Dutch) ---- */
+  function accepted(v, k){
+    var base = v.f[k].split('/'), A = IRR[gl].aux;
+    if (!A || k !== A.k) return base;
+    var out = base.slice();
+    A.words(v.aux).forEach(function(w){ base.forEach(function(b){ out.push(w + ' ' + b); }); });
+    return out;
+  }
+  function shownAnswer(v, k){
+    var base = v.f[k], A = IRR[gl].aux;
+    if (A && k === A.k) { var w = A.words(v.aux); return w[0] + ' ' + base + (w[1] ? ' (' + w[1] + ' ' + base + ')' : ''); }
+    return base.replace(/\//g, ' / ');
+  }
+  /* ---- conjugation languages (Spanish, French) ---- */
+  var FR_PRES = esRows('être|suis|es|est|sommes|êtes|sont;avoir|ai|as|a|avons|avez|ont;aller|vais|vas|va|allons|allez|vont;faire|fais|fais|fait|faisons|faites|font;dire|dis|dis|dit|disons|dites|disent;pouvoir|peux|peux|peut|pouvons|pouvez|peuvent;vouloir|veux|veux|veut|voulons|voulez|veulent;savoir|sais|sais|sait|savons|savez|savent;devoir|dois|dois|doit|devons|devez|doivent;venir|viens|viens|vient|venons|venez|viennent;devenir|deviens|deviens|devient|devenons|devenez|deviennent;revenir|reviens|reviens|revient|revenons|revenez|reviennent;tenir|tiens|tiens|tient|tenons|tenez|tiennent;obtenir|obtiens|obtiens|obtient|obtenons|obtenez|obtiennent;prendre|prends|prends|prend|prenons|prenez|prennent;apprendre|apprends|apprends|apprend|apprenons|apprenez|apprennent;comprendre|comprends|comprends|comprend|comprenons|comprenez|comprennent;voir|vois|vois|voit|voyons|voyez|voient;mettre|mets|mets|met|mettons|mettez|mettent;permettre|permets|permets|permet|permettons|permettez|permettent;partir|pars|pars|part|partons|partez|partent;sortir|sors|sors|sort|sortons|sortez|sortent;dormir|dors|dors|dort|dormons|dormez|dorment;sentir|sens|sens|sent|sentons|sentez|sentent;servir|sers|sers|sert|servons|servez|servent;connaître|connais|connais|connaît|connaissons|connaissez|connaissent;naître|nais|nais|naît|naissons|naissez|naissent;croire|crois|crois|croit|croyons|croyez|croient;boire|bois|bois|boit|buvons|buvez|boivent;lire|lis|lis|lit|lisons|lisez|lisent;écrire|écris|écris|écrit|écrivons|écrivez|écrivent;vivre|vis|vis|vit|vivons|vivez|vivent;suivre|suis|suis|suit|suivons|suivez|suivent;ouvrir|ouvre|ouvres|ouvre|ouvrons|ouvrez|ouvrent;offrir|offre|offres|offre|offrons|offrez|offrent;découvrir|découvre|découvres|découvre|découvrons|découvrez|découvrent;recevoir|reçois|reçois|reçoit|recevons|recevez|reçoivent;courir|cours|cours|court|courons|courez|courent;mourir|meurs|meurs|meurt|mourons|mourez|meurent;rire|ris|ris|rit|rions|riez|rient;plaire|plais|plais|plaît|plaisons|plaisez|plaisent;conduire|conduis|conduis|conduit|conduisons|conduisez|conduisent;construire|construis|construis|construit|construisons|construisez|construisent;craindre|crains|crains|craint|craignons|craignez|craignent;peindre|peins|peins|peint|peignons|peignez|peignent;valoir|vaux|vaux|vaut|valons|valez|valent', 6);
+  var FR_FUT = (function(){
+    var E = ['ai', 'as', 'a', 'ons', 'ez', 'ont'];
+    return 'être|ser;avoir|aur;aller|ir;faire|fer;pouvoir|pourr;vouloir|voudr;savoir|saur;devoir|devr;venir|viendr;devenir|deviendr;revenir|reviendr;tenir|tiendr;obtenir|obtiendr;voir|verr;envoyer|enverr;recevoir|recevr;courir|courr;mourir|mourr;valoir|vaudr;falloir|faudr'.split(';').map(function(r){ r = r.split('|'); return {inf: r[0], forms: E.map(function(e){ return r[1] + e; })}; }).filter(function(v){ return v.inf !== 'falloir'; });
+  })();
+  /* infinitive | participle | auxiliary (a = avoir, e = être) */
+  var FR_PC = ('être|été|a;avoir|eu|a;aller|allé|e;faire|fait|a;dire|dit|a;pouvoir|pu|a;vouloir|voulu|a;savoir|su|a;devoir|dû|a;venir|venu|e;devenir|devenu|e;revenir|revenu|e;tenir|tenu|a;obtenir|obtenu|a;prendre|pris|a;apprendre|appris|a;comprendre|compris|a;voir|vu|a;mettre|mis|a;permettre|permis|a;partir|parti|e;sortir|sorti|e;dormir|dormi|a;sentir|senti|a;servir|servi|a;connaître|connu|a;naître|né|e;croire|cru|a;boire|bu|a;lire|lu|a;écrire|écrit|a;vivre|vécu|a;suivre|suivi|a;ouvrir|ouvert|a;offrir|offert|a;découvrir|découvert|a;couvrir|couvert|a;souffrir|souffert|a;recevoir|reçu|a;courir|couru|a;mourir|mort|e;rire|ri|a;plaire|plu|a;conduire|conduit|a;construire|construit|a;craindre|craint|a;peindre|peint|a;valoir|valu|a;envoyer|envoyé|a').split(';').map(function(r){ r = r.split('|'); return {inf: r[0], part: r[1], aux: r[2]}; });
+  var HAB_PRES = ['he', 'has', 'ha', 'hemos', 'habéis', 'han'], HAB_IMP = ['había', 'habías', 'había', 'habíamos', 'habíais', 'habían'];
+  var AV = ['ai', 'as', 'a', 'avons', 'avez', 'ont'], ET = ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'];
+  function frPc(v, p){
+    var aux = (v.aux === 'e' ? ET : AV)[p], out = [aux + ' ' + v.part];
+    if (v.aux === 'e') {
+      var sing = p < 3 ? ['e'] : [], pl = p >= 3 ? ['s', 'es'] : [];
+      (p === 4 ? ['e', 's', 'es'] : sing.concat(pl)).forEach(function(x){ out.push(aux + ' ' + v.part + x); });
+    }
+    return out;
+  }
+  var CJ = {
+    es: {
+      list: function(t){ return t === 'pres' ? ES_PRES : t === 'indef' ? ES_INDEF : ES_PART; },
+      head: function(t){ return t === 'perf' ? ['Infinitivo', 'Participio', 'Pretérito perfecto', 'Pluscuamperfecto'] : ['Infinitivo'].concat(IRR.es.pers); },
+      row: function(v, t){ return t === 'perf' ? [v.inf, v.part, 'he ' + v.part, 'había ' + v.part] : [v.inf].concat(v.forms); },
+      question: function(v, t, p){
+        if (t === 'perf') { var pl = Math.random() < .5; return {inf: v.inf, tense: pl ? 'Pretérito pluscuamperfecto' : 'Pretérito perfecto', p: p, ans: [(pl ? HAB_IMP : HAB_PRES)[p] + ' ' + v.part]}; }
+        return {inf: v.inf, tense: t === 'pres' ? 'Presente de indicativo' : 'Pretérito indefinido', p: p, ans: [v.forms[p]]};
+      },
+      clean: function(s){ return s; }
+    },
+    fr: {
+      list: function(t){ return t === 'pres' ? FR_PRES : t === 'fut' ? FR_FUT : FR_PC; },
+      head: function(t){ return t === 'pc' ? ['Infinitif', 'Participe passé', 'Auxiliaire', 'Exemple (je)'] : ['Infinitif'].concat(IRR.fr.pers.map(function(x, i){ return i === 0 ? "je / j'" : x; })); },
+      row: function(v, t){ return t === 'pc' ? [v.inf, v.part, v.aux === 'e' ? 'être' : 'avoir', v.aux === 'e' ? 'je suis ' + v.part + '(e)' : "j'ai " + v.part] : [v.inf].concat(v.forms); },
+      question: function(v, t, p){
+        if (t === 'pc') return {inf: v.inf, tense: 'Passé composé', p: p, ans: frPc(v, p)};
+        return {inf: v.inf, tense: t === 'pres' ? 'Présent' : 'Futur simple', p: p, ans: [v.forms[p]]};
+      },
+      clean: function(s){ return String(s).replace(/^\s*(?:je\s+|j['’]\s*|tu\s+|il\s+|elle\s+|on\s+|nous\s+|vous\s+|ils\s+|elles\s+)/i, ''); }
+    }
+  };
+  function gtense(){ return GT[gl]; }
+  function cjList(){ return CJ[gl].list(gtense()); }
+  function grammar(){
+    cur = null; setView('grammar');
+    app.innerHTML = '<header class="ph"><p class="eyebrow"><span>Revision Room</span></p><h1><span class="hl">' + esc(t('nav_gram')) + '</span></h1><p class="sub">' + esc(t('gram_sub')) + '</p></header>' +
+      '<div class="tiles" style="margin-top:8px"><button class="tile wide" data-gopen="irreg"><span class="tn">' + esc(t('gram_irreg')) + '</span><span class="tc">' + esc(t('gram_irreg_sub')) + '</span><span class="tl">' + Object.keys(IRR).map(function(k){ return IRR[k].name; }).join(' · ') + '</span></button></div>' +
+      '<p class="foot">' + esc(t('foot', {v: VERSION_LABEL})) + '</p>';
+    window.scrollTo(0, 0);
+  }
+  function irregHead(){
+    var C = IRR[gl];
+    return '<div class="bar"><button class="link" data-gram>← ' + esc(t('nav_gram')) + '</button></div>' +
+      '<header class="ph"><h1><span class="hl">' + esc(t('gram_irreg')) + '</span></h1></header>' +
+      '<div class="seg" role="group" style="margin-bottom:10px">' + Object.keys(IRR).map(function(k){ return '<button class="segb' + (gl === k ? ' on' : '') + '" data-glang="' + k + '" aria-pressed="' + (gl === k) + '">' + IRR[k].name + '</button>'; }).join('') + '</div>' +
+      (C.kind === 'conj' ? '<div class="seg" role="group" style="margin-bottom:10px">' + C.tenses.map(function(x){ return '<button class="segb' + (GT[gl] === x[0] ? ' on' : '') + '" data-gtense="' + x[0] + '" aria-pressed="' + (GT[gl] === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>' : '') +
+      '<div class="seg" role="group" style="margin-bottom:18px">' + [['table', 'g_table'], ['practice', 'g_practice']].map(function(x){ return '<button class="segb' + (gm === x[0] ? ' on' : '') + '" data-gmode="' + x[0] + '" aria-pressed="' + (gm === x[0]) + '">' + esc(t(x[1])) + '</button>'; }).join('') + '</div>';
+  }
+  function irregTable(){
+    var C = IRR[gl], isCj = C.kind === 'conj';
+    app.innerHTML = irregHead() +
+      '<div class="fb" style="margin-top:0"><label>' + esc(t('g_search')) + '<input id="gq" type="search" dir="auto" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(gq) + '"></label></div>' +
+      '<p class="hint" id="gcount"></p><div class="mini gt" id="gtab"></div>';
+    function rows(){
+      var q = gnorm(gq), head, body, n;
+      if (isCj) {
+        var L = cjList().filter(function(v){ return !q || gnorm(v.inf).indexOf(q) > -1 || (v.forms || [v.part]).some(function(x){ return gnorm(x).indexOf(q) > -1; }); });
+        n = L.length; head = CJ[gl].head(gtense());
+        body = L.map(function(v){ return '<tr>' + CJ[gl].row(v, gtense()).map(function(c, i){ return '<td>' + (i ? esc(c) : '<b>' + esc(c) + '</b>') + '</td>'; }).join('') + '</tr>'; });
+      } else {
+        var list = C.list.filter(function(v){ return !q || v.f.some(function(x){ return gnorm(x).indexOf(q) > -1; }); });
+        n = list.length; head = C.cols.map(function(c, i){ return c + (i === 0 && C.first ? '<br><span class="aux">' + C.first + '</span>' : ''); });
+        body = list.map(function(v){
+          return '<tr>' + v.f.map(function(x, i){
+            var s = i === 0 ? '<b>' + esc(x) + '</b>' : esc(x.replace(/\//g, ' / '));
+            if (i === 0 && v.pr) s += '<br><span class="aux">' + esc(v.pr.replace(/\//g, ' / ')) + '</span>';
+            if (C.aux && i === C.aux.k) s += '<br><span class="aux">' + C.aux.show(v.aux) + '</span>';
+            return '<td>' + s + '</td>';
+          }).join('') + '</tr>';
+        });
+      }
+      $('#gcount').textContent = t('g_n_verbs', {n: n});
+      $('#gtab').innerHTML = '<table><thead><tr>' + head.map(function(c){ return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>' + body.join('') + '</tbody></table>';
+    }
+    rows();
+    $('#gq').addEventListener('input', function(e){ gq = e.target.value; rows(); });
+    window.scrollTo(0, 0);
+  }
+  function irregStart(){
+    var C = IRR[gl], cnt = C.kind === 'conj' ? cjList().length : C.list.length;
+    app.innerHTML = irregHead() + '<section class="card" style="margin-top:0"><p class="sentence" style="line-height:1.5">' + esc(t(C.kind === 'conj' ? 'g_type_one' : 'g_type_forms')) + '</p>' +
+      '<p class="hint">' + esc(t('g_n_verbs', {n: cnt})) + (C.hint ? ' · ' + esc(t(C.hint)) : '') + (C.hint2 ? ' ' + esc(t(C.hint2)) : '') + '</p>' +
+      '<div class="row" style="margin-top:18px"><button class="btn primary" data-gstart>' + esc(t('g_start')) + '</button></div></section>';
+    window.scrollTo(0, 0);
+  }
+  function gResults(right, n, wrong, retry, again, what){
+    var pct = n ? right / n * 100 : 0, msg = pct >= 90 ? t('r_clean') : pct >= 60 ? t('r_solid') : t('r_more');
+    app.innerHTML = '<div class="res"><p class="label">' + esc(t('finished')) + '</p><p class="big">' + right + ' / ' + n + '</p><p class="sub">' + esc(t(what)) + '</p><p class="msg2">' + msg + '</p>' +
+      '<div class="row">' + (wrong.length ? '<button class="btn primary" id="gretry">' + esc(t('retry')) + '</button>' : '') + '<button class="btn ' + (wrong.length ? 'ghost' : 'primary') + '" id="gagain">' + esc(t('again_go')) + '</button><button class="btn ghost" data-gmode="table">' + esc(t('g_table')) + '</button></div></div>';
+    if (wrong.length) $('#gretry').onclick = retry;
+    $('#gagain').onclick = again;
+    window.scrollTo(0, 0);
+  }
+  function gTop(i, n){
+    return '<div class="top"><button class="link" data-gmode="practice">' + esc(t('back')) + '</button><span class="count">' + (i + 1) + ' / ' + n + '</span></div>' +
+      '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + i + '"><i style="width:' + (n ? i / n * 100 : 0) + '%"></i></div>';
+  }
+  function gAfter(ok, i, n, next){
+    $('#fb').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b>' + esc(ok ? t('correct') : t('not_quite')) + '</b> ' + esc(ok ? '' : t('answer_green')) + '</div>';
+    $('#act').innerHTML = '<button class="btn primary" id="next">' + esc(i === n - 1 ? t('see_results') : t('next')) + '</button>';
+    $('#next').onclick = next; $('#next').focus();
+  }
+  var BIG = 'line-height:1.3;font-size:clamp(30px,8vw,40px);font-family:var(--display);font-weight:700';
+  function irregPractice(list){
+    var C = IRR[gl];
+    if (C.kind === 'conj') return cjPractice(list);
+    var items = list || fresh('irreg:' + gl, C.list, 10), n = items.length, i = 0, right = 0, wrong = [], nf = C.cols.length;
+    function draw(){
+      if (i >= n) return gResults(right, n, wrong, function(){ irregPractice(wrong); }, function(){ irregPractice(); }, 'g_verbs_ok');
+      var v = items[i], ks = [];
+      for (var k = 1; k < nf; k++) ks.push(k);
+      app.innerHTML = gTop(i, n) +
+        '<p class="label" style="margin-top:22px">' + esc(C.cols[0]) + '</p><p class="sentence" style="' + BIG + '" dir="auto">' + esc(v.f[0]) + (v.pr ? ' <span class="hint" style="font-size:16px;font-family:var(--body);font-weight:400">(' + esc(v.pr.replace(/\//g, ' / ')) + ')</span>' : '') + '</p>' +
+        '<div class="fb" style="background:none;border:0;padding:0">' + ks.map(function(k){ return '<label>' + esc(C.cols[k]) + '<input class="gin" data-k="' + k + '" type="text" dir="auto" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>'; }).join('') + '</div>' +
+        '<div id="fb" role="status"></div><div class="row" id="act"><button class="btn primary" id="check">' + esc(t('check')) + '</button></div>';
+      var ins = [].slice.call(app.querySelectorAll('input.gin')), checked = false;
+      ins[0].focus();
+      function doCheck(){
+        if (checked) return; checked = true;
+        var ok = true;
+        ins.forEach(function(inp){
+          var k = +inp.dataset.k, good = accepted(v, k).map(gnorm).indexOf(gnorm(inp.value)) > -1;
+          inp.readOnly = true; inp.classList.add(good ? 'ok' : 'no');
+          if (!good) { ok = false; inp.insertAdjacentHTML('afterend', '<span class="fix">' + esc(shownAnswer(v, k)) + '</span>'); }
+        });
+        if (ok) right++; else wrong.push(v);
+        gAfter(ok, i, n, function(){ i++; draw(); });
+      }
+      ins.forEach(function(inp, j){ inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); if (!checked && j < ins.length - 1) ins[j + 1].focus(); else doCheck(); } }); });
+      $('#check').onclick = doCheck;
+      window.scrollTo(0, 0);
+    }
+    draw();
+  }
+  function cjPractice(list){
+    var C = IRR[gl], X = CJ[gl], tn = gtense();
+    var items = list || fresh('irreg:' + gl + ':' + tn, cjList(), 10).map(function(v){ return X.question(v, tn, Math.floor(Math.random() * 6)); });
+    var n = items.length, i = 0, right = 0, wrong = [];
+    function draw(){
+      if (i >= n) return gResults(right, n, wrong, function(){ cjPractice(wrong); }, function(){ cjPractice(); }, 'g_forms_ok');
+      var q = items[i];
+      app.innerHTML = gTop(i, n) +
+        '<p class="label" style="margin-top:22px">' + esc(q.tense) + '</p><p class="sentence" style="' + BIG + '">' + esc(q.inf) + '</p>' +
+        '<p class="hint" style="font-size:18px;margin:4px 0 0">' + esc(C.pers[q.p]) + '</p>' +
+        '<div class="fb" style="background:none;border:0;padding:0"><label><input class="gin" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="' + esc(q.inf + ' ' + C.pers[q.p]) + '"></label></div>' +
+        '<div id="fb" role="status"></div><div class="row" id="act"><button class="btn primary" id="check">' + esc(t('check')) + '</button></div>';
+      var inp = app.querySelector('input.gin'), checked = false;
+      inp.focus();
+      function doCheck(){
+        if (checked) return; checked = true;
+        var v = norm(X.clean(inp.value)), good = q.ans.some(function(a){ return norm(a) === v; });
+        inp.readOnly = true; inp.classList.add(good ? 'ok' : 'no');
+        if (!good) inp.insertAdjacentHTML('afterend', '<span class="fix">' + esc(q.ans[0]) + '</span>');
+        if (good) right++; else wrong.push(q);
+        gAfter(good, i, n, function(){ i++; draw(); });
+      }
+      inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); doCheck(); } });
+      $('#check').onclick = doCheck;
+      window.scrollTo(0, 0);
+    }
+    draw();
+  }
+  function irreg(){ view = 'grammar'; if (gm === 'table') irregTable(); else irregStart(); }
+
   /* ---------- library ---------- */
   function fmtDate(ts){ try { return new Date(ts).toLocaleDateString('en-GB', {day: 'numeric', month: 'short'}); } catch (e) { return ''; } }
   function uiPicker(){
@@ -1220,6 +1442,7 @@ var I18N = {
   /* ---------- shell: left menu, top bar ---------- */
   var view = 'lessons';
   var ICON_BOOK = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 4.5h10a3 3 0 013 3V20H8a3 3 0 01-3-3V4.5zM5 17a3 3 0 013-3h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+  var ICON_GRAM = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="12" r="2.2" fill="currentColor"/></svg>';
   var ICON_PLAY = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 8.6v6.8l5.6-3.4z" fill="currentColor"/></svg>';
   function setView(v){ view = v; updateNav(); }
   function updateNav(){
@@ -1230,12 +1453,13 @@ var I18N = {
     var side = document.getElementById('side'); if (!side) return;
     side.innerHTML = '<a class="brand" href="https://t.me/polycorner" target="_blank" rel="noopener"><span class="b1">Sasha’s World of Languages</span><span class="b2">Revision Room</span></a>' +
       '<nav aria-label="' + esc(t('menu_btn')) + '"><button class="nv" data-nav="lessons">' + ICON_BOOK + '<span>' + esc(t('your_lessons')) + '</span></button>' +
-      '<button class="nv" data-nav="videos">' + ICON_PLAY + '<span>' + esc(t('vid_title')) + '</span></button></nav>' +
+      '<button class="nv" data-nav="videos">' + ICON_PLAY + '<span>' + esc(t('vid_title')) + '</span></button>' +
+      '<button class="nv" data-nav="grammar">' + ICON_GRAM + '<span>' + esc(t('nav_gram')) + '</span></button></nav>' +
       '<div class="sidef">' + ((FB_KEY || FB_URL) ? '<button class="btn ghost sm" data-feedback>' + esc(t('feedback_btn')) + '</button>' : '') + '</div>';
     var slot = document.getElementById('uislot'); if (slot) slot.innerHTML = uiPicker();
     var bg = document.getElementById('burger'); if (bg) bg.setAttribute('aria-label', t('menu_btn'));
     var us = document.getElementById('uisel');
-    if (us) us.onchange = function(){ UI = us.value; try { localStorage.setItem('revision-room:ui', UI); } catch (x) {} document.documentElement.lang = UI; renderSide(); stopSpeech(); if (view === 'videos') videoList(); else library(); };
+    if (us) us.onchange = function(){ UI = us.value; try { localStorage.setItem('revision-room:ui', UI); } catch (x) {} document.documentElement.lang = UI; renderSide(); stopSpeech(); if (view === 'videos') videoList(); else if (view === 'grammar') grammar(); else library(); };
     updateNav();
   }
   (function(){
@@ -1245,7 +1469,7 @@ var I18N = {
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeNav(); });
     document.getElementById('side').addEventListener('click', function(e){
       var b = e.target.closest('[data-nav]');
-      if (b) { stopSpeech(); closeNav(); if (b.dataset.nav === 'videos') videoList(); else library(); return; }
+      if (b) { stopSpeech(); closeNav(); if (b.dataset.nav === 'videos') videoList(); else if (b.dataset.nav === 'grammar') grammar(); else library(); return; }
       if (e.target.closest('[data-feedback]')) { closeNav(); if (FB_URL) window.open(FB_URL, '_blank', 'noopener'); else feedback(); }
     });
   })();
@@ -1470,7 +1694,7 @@ var I18N = {
   /* Pick n items, preferring ones not used in the last rounds, so repeat sessions bring new sentences. */
   function fresh(key, pool, n){
     var seen = (S.seen || (S.seen = {}))[key] || [];
-    function k(it){ return it.a || it.src || it.q || JSON.stringify(it); }
+    function k(it){ return it.inf ? it.inf + (it.p !== undefined ? '' : '') : it.f ? it.f[0] : (it.a || it.src || it.q || JSON.stringify(it)); }
     var unseen = pool.filter(function(it){ return seen.indexOf(k(it)) < 0; });
     var pick = sample(unseen, n);
     if (pick.length < n) {
